@@ -1,1 +1,4 @@
 Add your details here
+**Saatvik Sawarn**  
+Github: https://github.com/Saatvik-GT
+I'm a Computer Science Engineering student from Chandigarh University, currently pursuing my BTech in CSE. I'm from Chandigarh and have a strong interest in software development and electronics.
