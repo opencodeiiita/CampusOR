@@ -1,0 +1,5 @@
+Name: Arshdeep Singh
+Username: Arshgill01
+Description: Currently trying to be proficient and am practicing my react skills by making simple but really well structured projects. Also, have a huge interest in Deep Learning, currently exploring that from scratch, reading about LLMs, transformers, agents.
+
+
