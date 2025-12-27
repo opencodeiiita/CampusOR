@@ -1,3 +1,0 @@
-Name: Akanksha Mishra
-GitHub: @aka-023
-About: A driven student exploring software development, algorithms, and real-world tech applications.
