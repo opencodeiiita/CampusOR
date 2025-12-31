@@ -8,36 +8,34 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { serviceEfficiencyData } from "./mockData";
+import { tokenStatusDistributionMock } from "./MockData";
 import ChartWrapper from "./ChartWrapper";
 
-const COLORS = ["#22c55e", "#ef4444"];
+const COLORS = ["#facc15", "#22c55e", "#ef4444", "#6b7280"];
 
 export default function ServiceEfficiencyChart() {
   return (
     <ChartWrapper
       title="Service Efficiency"
-      description="Compares successfully served tokens with delayed ones."
+      description="Distribution of token statuses across the system."
     >
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
-            data={serviceEfficiencyData}
-            dataKey="value"
-            nameKey="name"
+            data={tokenStatusDistributionMock}
+            dataKey="count"
+            nameKey="status"
             outerRadius={95}
             innerRadius={50}
-            paddingAngle={4}
-            animationDuration={800}
+            paddingAngle={3}
             label={({ name, percent }) =>
               `${name}: ${percent ? (percent * 100).toFixed(0) : 0}%`
             }
           >
-            {serviceEfficiencyData.map((_, i) => (
-              <Cell key={i} fill={COLORS[i]} />
+            {tokenStatusDistributionMock.map((_, i) => (
+              <Cell key={i} fill={COLORS[i % COLORS.length]} />
             ))}
           </Pie>
-
           <Tooltip />
           <Legend verticalAlign="bottom" iconType="circle" />
         </PieChart>

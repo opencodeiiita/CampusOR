@@ -8,22 +8,22 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { waitTimeData } from "./mockData";
+import { avgWaitTimePerQueueMock } from "./MockData";
 import ChartWrapper from "./ChartWrapper";
 
 export default function WaitTimeChart() {
   return (
     <ChartWrapper
-      title="Average Waiting Time"
+      title="Average Waiting Time per Queue"
       description="Shows the average time users wait in different queues."
     >
       <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={waitTimeData}>
+        <BarChart data={avgWaitTimePerQueueMock}>
           <XAxis dataKey="queue" />
           <YAxis />
           <Tooltip />
           <Bar
-            dataKey="wait"
+            dataKey="avgWaitMinutes"
             fill="#16a34a"
             radius={[6, 6, 0, 0]}
             animationDuration={700}
