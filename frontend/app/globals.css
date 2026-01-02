@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-button {
-  cursor: pointer;
+
+
+.btn {
+  @apply px-4 py-2 rounded-lg text-sm font-medium border 
+         bg-white hover:bg-gray-100 transition 
+         cursor-pointer shadow-sm;
 }
