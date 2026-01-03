@@ -27,7 +27,7 @@ export interface QueueReadyEmailData {
 }
 
 export class EmailService {
-  private static getTemplateId(templateType: 'delayed' | 'almost-ready' | 'ready'): string {
+  private static getTemplateId(templateType: 'delayed' | 'almost_ready' | 'ready'): string {
     const templateId = process.env[`RESEND_${templateType.toUpperCase()}_TEMPLATE_ID`];
     if (!templateId) {
       throw new Error(`Template ID for ${templateType} not found in environment variables`);
@@ -60,7 +60,7 @@ export class EmailService {
 
   static async sendQueueAlmostReadyEmail(data: QueueAlmostReadyEmailData): Promise<void> {
     try {
-      const templateId = this.getTemplateId('almost-ready');
+      const templateId = this.getTemplateId('almost_ready');
       
       await resend.emails.send({
         from: process.env.FROM_EMAIL || 'noreply@campusor.com',
