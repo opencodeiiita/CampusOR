@@ -3,6 +3,7 @@ import healthRouter from "./routes/health.js";
 import router from "./routes/index.js";
 import queueRouter from "./modules/queue/queue.routes.js";
 import operatorRouter from "./modules/operator/operator.routes.js";
+import notificationsRouter from "./modules/notifications/notifications.routes.js";
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.use("/health", healthRouter);
 app.use("/api/queues", queueRouter);
 // Operator API endpoints
 app.use("/api/operator", operatorRouter);
+// Notifications API endpoints
+app.use("/api/notifications", notificationsRouter);
 
 // Main routes
 app.use("/", router);
