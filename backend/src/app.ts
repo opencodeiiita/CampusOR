@@ -5,6 +5,8 @@ import queueRouter from "./modules/queue/queue.routes.js";
 import operatorRouter from "./modules/operator/operator.routes.js";
 import adminRouter from "./modules/admin/admin.routes.js";
 import notificationRouter from "./modules/notifications/email.route.js";
+import generateQueueRouter from "./modules/generateQueue/generateQueue.route.js";
+
 
 const app = express();
 
@@ -21,6 +23,9 @@ app.use("/api/operator", operatorRouter);
 app.use("/api/admin", adminRouter);
 // Notification API endpoints
 app.use("/api/notifications", notificationRouter);
+// Generate Queue API endpoints
+app.use("/api/generate-queue", generateQueueRouter);
+
 
 // Main routes
 app.use("/", router);

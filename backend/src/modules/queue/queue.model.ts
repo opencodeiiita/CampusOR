@@ -5,31 +5,42 @@ export interface IQueue extends Document {
   name: string;
   isActive: boolean;
   nextSequence: number;
+  operator?: mongoose.Types.ObjectId; // ✅ NEW
   createdAt: Date;
   updatedAt: Date;
 }
 
-const queueSchema = new Schema<IQueue>({
-  name: { // queue name - unique so that we can identify the queue
-    type: String,
-    required: true
-  },
-  isActive: {// this tell if the queue is accepting new tokens or not
-    type: Boolean,
-    default: true, // by default queues are open for token generation
-  },
-  nextSequence: {//in queue - next available sequence number
+const queueSchema = new Schema<IQueue>(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+
+    // ✅ OPERATOR WHO CREATED THE QUEUE
+    operator: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false, // backward compatible
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    nextSequence: {
       type: Number,
       required: true,
-      default: 1,  
-      //Monotonically increasing sequence for token generation
+      default: 1,
     },
-}, {
-  timestamps: true // Automatically adds createdAt and updatedAt fields
-});
+  },
+  { timestamps: true }
+);
 
-queueSchema.index({ name: 1 }, {unique:true}); //Queue name should be unique
-queueSchema.index({ isActive: 1 });  //todo for future issue
+queueSchema.index({ name: 1 }, { unique: true });
+queueSchema.index({ isActive: 1 });
+
 
 
 //////-------------------------------------------------TOKEN ---------------------------------------------
@@ -75,4 +86,4 @@ tokenSchema.index({ queue:1, seq: 1 }, { unique: true });
 tokenSchema.index({ queue: 1, status: 1 });
 
 export const Token = mongoose.model<IToken>("Token", tokenSchema);
-export const Queue = mongoose.model<IQueue>('Queue', queueSchema);
+export const Queue = mongoose.model<IQueue>("Queue", queueSchema);

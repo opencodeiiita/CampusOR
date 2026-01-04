@@ -5,7 +5,7 @@ import { TokenService } from "./services/token.service.js";
 // 1: Create a new queue
 export async function createQueue(req: Request, res: Response) {
   try {
-    const { name } = req.body;
+    const { name, operator } = req.body;
 
     if (!name) {
       return res.status(400).json({
@@ -13,16 +13,11 @@ export async function createQueue(req: Request, res: Response) {
         error: "Queue name is required",
       });
     }
-    /*----------------NOTE : for now we are not checking if queue already exists or not but if later we need to check then we can add it */
-    // const exists = await Queue.findOne({name:name});
-    // if(exists){
-    //   return res.status(400).json({
-    //     success:false,
-    //     error:"Queue is already there"
-    //   })
-    // }
 
-    const queue = await Queue.create({ name });
+    const queue = await Queue.create({
+      name,
+      operator: operator || null, // ✅ optional
+    });
 
     return res.status(201).json({
       success: true,
@@ -30,6 +25,7 @@ export async function createQueue(req: Request, res: Response) {
         id: queue._id,
         name: queue.name,
         isActive: queue.isActive,
+        operator: queue.operator,
         createdAt: queue.createdAt,
       },
     });
