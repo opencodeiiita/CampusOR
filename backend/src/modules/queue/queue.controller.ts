@@ -1,35 +1,43 @@
 import { Request, Response } from "express";
-import { Queue, TokenStatus } from "./queue.model.js";
+import { Queue, Token, TokenStatus } from "./queue.model.js";
 import { TokenService } from "./services/token.service.js";
 
 // 1: Create a new queue
 export async function createQueue(req: Request, res: Response) {
   try {
-    const { name } = req.body;
+    const { name, location, operator } = req.body;
 
-    if (!name) {
+    if (!name || !location) {
       return res.status(400).json({
         success: false,
-        error: "Queue name is required",
+        error: "Queue name and location are required",
       });
     }
-    /*----------------NOTE : for now we are not checking if queue already exists or not but if later we need to check then we can add it */
-    // const exists = await Queue.findOne({name:name});
-    // if(exists){
-    //   return res.status(400).json({
-    //     success:false,
-    //     error:"Queue is already there"
-    //   })
-    // }
 
-    const queue = await Queue.create({ name });
+    // Check for existing queue with same name AND location
+    const existingQueue = await Queue.findOne({ name, location });
+    if (existingQueue) {
+      return res.status(409).json({
+        success: false,
+        error: "A queue with this name already exists at this location",
+      });
+    }
+
+    const queue = await Queue.create({
+      name,
+      location,
+      operator: operator || null, // optional
+      isActive: true, // Default to Active
+    });
 
     return res.status(201).json({
       success: true,
       queue: {
         id: queue._id,
         name: queue.name,
+        location: queue.location,
         isActive: queue.isActive,
+        operator: queue.operator,
         createdAt: queue.createdAt,
       },
     });
@@ -73,4 +81,66 @@ export async function updateTokenStatus(req: Request, res: Response) {
   }
 
   return res.status(200).json(result);
+}
+
+// 4: Get Operator View (Queue State + Tokens) -- NEW for Issue #131
+export async function getOperatorView(req: Request, res: Response) {
+  try {
+    const { queueId } = req.params;
+
+    const queue = await Queue.findById(queueId);
+    if (!queue) {
+      return res.status(404).json({ success: false, error: "Queue not found" });
+    }
+
+    // Fetch waiting tokens sorted by sequence
+    const tokens = await Token.find({ queue: queueId, status: TokenStatus.WAITING })
+      .sort({ seq: 1 })
+      .limit(50); 
+
+    // Find the most recently served token (Now Serving)
+    const nowServing = await Token.findOne({ queue: queueId, status: TokenStatus.SERVED })
+      .sort({ updatedAt: -1 });
+
+    return res.json({
+      success: true,
+      queue: {
+        id: queue._id,
+        name: queue.name,
+        location: queue.location,
+        isActive: queue.isActive,
+        nextSequence: queue.nextSequence
+      },
+      tokens: tokens.map(t => ({ id: t._id, number: t.seq, status: t.status })),
+      nowServing: nowServing ? { id: nowServing._id, number: nowServing.seq } : null
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: "Failed to fetch operator view" });
+  }
+}
+
+// 5: Toggle Queue Status (Pause/Resume) -- NEW for Issue #131
+export async function toggleQueue(req: Request, res: Response) {
+  try {
+    const { queueId } = req.params;
+    const queue = await Queue.findById(queueId);
+    
+    if (!queue) return res.status(404).json({ success: false, error: "Queue not found" });
+
+    // Toggle status
+    queue.isActive = !queue.isActive;
+    await queue.save();
+
+    return res.json({ 
+      success: true, 
+      status: queue.isActive ? "ACTIVE" : "PAUSED", 
+      queue: {
+        id: queue._id,
+        name: queue.name,
+        isActive: queue.isActive
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: "Failed to toggle queue" });
+  }
 }

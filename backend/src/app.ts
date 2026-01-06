@@ -1,10 +1,22 @@
 import express from "express";
+import cors from "cors";
 import healthRouter from "./routes/health.js";
 import router from "./routes/index.js";
 import queueRouter from "./modules/queue/queue.routes.js";
 import operatorRouter from "./modules/operator/operator.routes.js";
+import { env } from "./config/env.js";
 
 const app = express();
+
+// Enable CORS for frontend
+app.use(
+  cors({
+    origin: env.FRONTEND_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // basic middleware
 app.use(express.json());

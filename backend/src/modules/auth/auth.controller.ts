@@ -4,7 +4,7 @@ import { registerUser, loginUser } from "./auth.service.js";
 export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password, role } = req.body;
-    console.log(name, email, password, role); //debugg
+    //console.log(name, email, password, role); //debugg
     // Basic validation
     if (!name || !email || !password) {
       return res.status(400).json({
