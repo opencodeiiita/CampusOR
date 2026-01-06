@@ -43,8 +43,13 @@ export default function OperatorLiveDashboard() {
     try {
       await apiService.patch(`/api/queues/tokens/${tokenId}/status`, { status }, true); // Note route prefix might differ based on your index.ts
       fetchState(); // Refresh UI
-    } catch (err) {
-      alert("Action failed");
+    } catch (err: unknown) {
+      console.error(err);
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Unknown error occurred";
+      alert(`Action failed: ${message}`);
     }
   };
 
