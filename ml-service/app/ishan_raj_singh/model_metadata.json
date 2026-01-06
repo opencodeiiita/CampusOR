@@ -1,0 +1,13 @@
+{
+  "model_type": "Random Forest",
+  "features": [
+    "tokensAhead",
+    "activeCounters",
+    "hourOfDay",
+    "dayOfWeek",
+    "avgServiceTime"
+  ],
+  "mae": 4.5599221017803435,
+  "rmse": 6.591679613962415,
+  "r2": 0.9843208303138984
+}

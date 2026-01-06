@@ -4,10 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 
+type UserRole = "user" | "operator";
+
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<UserRole>("user");
+  const [collegeEmail, setCollegeEmail] = useState("");
+  const [department, setDepartment] = useState("");
+  const [position, setPosition] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -16,15 +22,47 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    
+    // Client-side validation for role-specific fields
+    if (role === "user" && !collegeEmail) {
+      setError("College email is required for user role");
+      return;
+    }
+    if (role === "operator") {
+      if (!department) {
+        setError("Department is required for operator role");
+        return;
+      }
+      if (!position) {
+        setError("Position is required for operator role");
+        return;
+      }
+    }
+    
     setIsLoading(true);
 
     try {
+      // Prepare request body with role-specific fields
+      const requestBody: any = { 
+        name, 
+        email, 
+        password, 
+        role 
+      };
+      
+      if (role === "user") {
+        requestBody.collegeEmail = collegeEmail;
+      } else if (role === "operator") {
+        requestBody.department = department;
+        requestBody.position = position;
+      }
+
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -91,10 +129,53 @@ export default function SignupPage() {
           required
         />
 
+        <select
+          className="w-full border px-3 py-2 rounded mb-3"
+          value={role}
+          onChange={(e) => setRole(e.target.value as UserRole)}
+          required
+        >
+          <option value="user">User</option>
+          <option value="operator">Operator</option>
+        </select>
+
+        {role === "user" && (
+          <input
+            type="email"
+            placeholder="College Email"
+            className="w-full border px-3 py-2 rounded mb-3"
+            value={collegeEmail}
+            onChange={(e) => setCollegeEmail(e.target.value)}
+            required
+          />
+        )}
+
+        {role === "operator" && (
+          <>
+            <input
+              type="text"
+              placeholder="Department"
+              className="w-full border px-3 py-2 rounded mb-3"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Position"
+              className="w-full border px-3 py-2 rounded mb-3"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              required
+            />
+          </>
+        )}
+
         <input
           type="password"
           placeholder="Password"
           className="w-full border px-3 py-2 rounded mb-4"
+          autoComplete="on"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required

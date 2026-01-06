@@ -7,6 +7,10 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: UserRole;
+  // Role-specific fields
+  collegeEmail?: string; // Required for "user" role
+  department?: string; // Required for "operator" role
+  position?: string; // Required for "operator" role
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +37,20 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ["user", "operator", "admin"],
       default: "user", //by default role : user
+    },
+    // Role-specific fields (optional in schema, validated in service)
+    collegeEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
+    department: {
+      type: String,
+      trim: true,
+    },
+    position: {
+      type: String,
+      trim: true,
     },
   },
   {

@@ -1,4 +1,3 @@
-
 export const userDashboardMock = {
   user: {
     userId: "u_123",
@@ -35,7 +34,6 @@ export const userDashboardMock = {
   lastUpdated: "10:28 AM",
 };
 
-
 export const userNearTurnMock = {
   ...userDashboardMock,
   token: {
@@ -56,7 +54,6 @@ export const userNearTurnMock = {
   },
 };
 
-
 export const userServedMock = {
   ...userDashboardMock,
   token: {
@@ -69,7 +66,6 @@ export const userServedMock = {
     message: "You have been served. Thank you!",
   },
 };
-
 
 export const userCancelledMock = {
   ...userDashboardMock,
@@ -84,8 +80,7 @@ export const userCancelledMock = {
   },
 };
 
-
-export const userNoActiveQueueMock = {  
+export const userNoActiveQueueMock = {
   user: {
     userId: "u_123",
     name: "Student User",
@@ -93,4 +88,67 @@ export const userNoActiveQueueMock = {
   activeQueue: null,
   message: "You’re not in any queue right now.",
   actionHint: "Browse available queues to get started.",
+};
+// Sidebar mock data
+export const sidebarMockData = {
+  userProfile: {
+    name: "Student User",
+    email: "student@university.edu",
+    studentId: "2024-CS-123",
+    joinedQueues: 8,
+  },
+  queueHistory: [
+    {
+      id: "h1",
+      queueName: "Library - Book Issue",
+      date: "Today, 9:15 AM",
+      status: "completed",
+      waitTime: "8 min",
+    },
+    {
+      id: "h2",
+      queueName: "Admin Office - ID Card",
+      date: "Yesterday, 2:30 PM",
+      status: "completed",
+      waitTime: "15 min",
+    },
+    {
+      id: "h3",
+      queueName: "Cafeteria - Meal Card",
+      date: "Jan 1, 11:00 AM",
+      status: "completed",
+      waitTime: "5 min",
+    },
+  ],
+  availableQueues: [
+    {
+      id: "q1",
+      name: "Library - Book Return",
+      location: "Central Library",
+      waitTime: "~5 min",
+      peopleWaiting: 2,
+      status: "active",
+    },
+    {
+      id: "q2",
+      name: "Examination Cell",
+      location: "Academic Block",
+      waitTime: "~20 min",
+      peopleWaiting: 8,
+      status: "active",
+    },
+    {
+      id: "q3",
+      name: "Sports Office",
+      location: "Sports Complex",
+      waitTime: "~10 min",
+      peopleWaiting: 4,
+      status: "active",
+    },
+  ],
+  quickStats: {
+    totalQueuesJoined: 8,
+    averageWaitTime: "12 min",
+    timeSaved: "2.5 hours",
+  },
 };

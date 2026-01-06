@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
-
-export default function Page() {
-  redirect("/landing");
+export default function Home() {
+  return (
+    <div>CampusOR</div>
+  );
 }

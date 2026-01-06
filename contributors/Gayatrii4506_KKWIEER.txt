@@ -1,0 +1,6 @@
+Name: Gayatri Duse
+Github username: Gayatrii4506
+About Me:
+I am a Computer Engineering student at KKWIEER with interest in open source,
+problem solving, and software development. I enjoy learning by building projects,
+participating in hackathons, and contributing to developer communities.

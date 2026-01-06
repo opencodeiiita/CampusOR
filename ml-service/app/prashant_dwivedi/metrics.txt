@@ -1,0 +1,18 @@
+Wait Time Prediction Model - Evaluation Metrics
+==================================================
+
+LinearRegression Model:
+  MAE: 11.32 minutes
+  RMSE: 16.17 minutes
+  R²: 0.6933
+
+RandomForest Model:
+  MAE: 3.20 minutes
+  RMSE: 4.18 minutes
+  R²: 0.9795
+
+Best Model: RandomForest (Lower MAE and RMSE)
+
+Dataset: 1000 records
+Features: tokensAhead, activeCounters, hourOfDay, dayOfWeek, avgServiceTime
+Target: actualWaitMinutes

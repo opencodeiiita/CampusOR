@@ -27,6 +27,13 @@ app.use("/health", healthRouter);
 app.use("/api/queues", queueRouter);
 // Operator API endpoints
 app.use("/api/operator", operatorRouter);
+// Admin API endpoints (protected)
+app.use("/api/admin", adminRouter);
+// Notification API endpoints
+app.use("/api/notifications", notificationRouter);
+// Generate Queue API endpoints
+app.use("/api/generate-queue", generateQueueRouter);
+
 
 // Main routes
 app.use("/", router);
