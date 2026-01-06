@@ -1,5 +1,6 @@
 import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastContainer } from "react-toastify";
 
 export const metadata = {
   title: "CampusOR",
@@ -15,6 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>{children}</AuthProvider>
+        <ToastContainer position="top-right" />
       </body>
     </html>
   );

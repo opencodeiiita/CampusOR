@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   userDashboardMock,
   userNearTurnMock,
@@ -29,6 +29,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 type MockState = "waiting" | "near" | "served" | "cancelled" | "no-queue";
 
@@ -142,6 +143,37 @@ export default function UserDashboard({
     }
   }, [data]);
 
+
+  const prevStatus = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!hasActiveQueue(data)) return;
+
+    const status = data.token.status;
+
+    if (prevStatus.current === status) return;
+
+    switch (status) {
+      case "waiting":
+        toast.info("You are in the queue. Sit back and relax.");
+        break;
+
+      case "near":
+        toast.warning("You are next! Please stay nearby.");
+        break;
+
+      case "served":
+        toast.success("You have been served.");
+        break;
+
+      case "cancelled":
+        toast.error("You left the queue.");
+        break;
+    }
+
+    prevStatus.current = status;
+  }, [data]);
+
   const handleLeaveQueue = () => {
     setCurrentState("cancelled");
     setTimeout(() => {
@@ -151,15 +183,15 @@ export default function UserDashboard({
 
   const handleReschedule = () => {
     setIsRescheduleOpen(true);
+    toast.success("Reschedule requested! (Mock action)");
     setTimeout(() => {
       setIsRescheduleOpen(false);
-      alert("Reschedule requested! (Mock action)");
     }, 1500);
   };
 
- 
 
- 
+
+
 
   const getStatusText = (status: string) => {
     switch (status) {
@@ -202,9 +234,8 @@ export default function UserDashboard({
     <div className="flex h-screen bg-gray-50">
       {/* Navigation Sidebar */}
       <aside
-        className={`${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 fixed lg:relative w-64 h-full bg-white border-r border-gray-200 transition-transform duration-300 z-50`}
+        className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } lg:translate-x-0 fixed lg:relative w-64 h-full bg-white border-r border-gray-200 transition-transform duration-300 z-50`}
       >
         {/* Logo/Brand */}
         <div className="p-6 border-b border-gray-200">
@@ -312,15 +343,14 @@ export default function UserDashboard({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Token Number Card */}
             <div
-              className={`rounded-xl p-6 border border-gray-200 ${
-                currentState === "near"
+              className={`rounded-xl p-6 border border-gray-200 ${currentState === "near"
                   ? "bg-orange-50"
                   : currentState === "served"
-                  ? "bg-green-50"
-                  : currentState === "cancelled"
-                  ? "bg-red-50"
-                  : "bg-blue-50"
-              }`}
+                    ? "bg-green-50"
+                    : currentState === "cancelled"
+                      ? "bg-red-50"
+                      : "bg-blue-50"
+                }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm text-gray-600 font-medium">Your Token</p>
@@ -333,15 +363,14 @@ export default function UserDashboard({
               </div>
               <div className="mt-3 flex items-center gap-1">
                 <span
-                  className={`text-sm font-semibold px-4 py-1 rounded-full ${
-                    activeData.token.status === "near"
+                  className={`text-sm font-semibold px-4 py-1 rounded-full ${activeData.token.status === "near"
                       ? "bg-orange-100 text-orange-700"
                       : activeData.token.status === "served"
-                      ? "bg-green-100 text-green-700"
-                      : activeData.token.status === "cancelled"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-blue-100 text-blue-700"
-                  }`}
+                        ? "bg-green-100 text-green-700"
+                        : activeData.token.status === "cancelled"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-blue-100 text-blue-700"
+                    }`}
                 >
                   {getStatusText(activeData.token.status)}
                 </span>
@@ -350,15 +379,14 @@ export default function UserDashboard({
 
             {/* Now Serving Card */}
             <div
-              className={`rounded-xl p-6 border border-gray-200 ${
-                currentState === "near"
+              className={`rounded-xl p-6 border border-gray-200 ${currentState === "near"
                   ? "bg-orange-50"
                   : currentState === "served"
-                  ? "bg-green-50"
-                  : currentState === "cancelled"
-                  ? "bg-red-50"
-                  : "bg-blue-50"
-              }`}
+                    ? "bg-green-50"
+                    : currentState === "cancelled"
+                      ? "bg-red-50"
+                      : "bg-blue-50"
+                }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm text-gray-600 font-medium">Now Serving</p>
@@ -380,15 +408,14 @@ export default function UserDashboard({
             {/* Wait Time Card */}
             {activeData.estimate && (
               <div
-                className={`rounded-xl p-6 border border-gray-200 ${
-                  currentState === "near"
+                className={`rounded-xl p-6 border border-gray-200 ${currentState === "near"
                     ? "bg-orange-50"
                     : currentState === "served"
-                    ? "bg-green-50"
-                    : currentState === "cancelled"
-                    ? "bg-red-50"
-                    : "bg-blue-50"
-                }`}
+                      ? "bg-green-50"
+                      : currentState === "cancelled"
+                        ? "bg-red-50"
+                        : "bg-blue-50"
+                  }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-gray-600 font-medium">
@@ -412,15 +439,14 @@ export default function UserDashboard({
             {/* Users Ahead Card */}
             {activeData.estimate && (
               <div
-                className={`rounded-xl p-6 border border-gray-200 ${
-                  currentState === "near"
+                className={`rounded-xl p-6 border border-gray-200 ${currentState === "near"
                     ? "bg-orange-50"
                     : currentState === "served"
-                    ? "bg-green-50"
-                    : currentState === "cancelled"
-                    ? "bg-red-50"
-                    : "bg-blue-50"
-                }`}
+                      ? "bg-green-50"
+                      : currentState === "cancelled"
+                        ? "bg-red-50"
+                        : "bg-blue-50"
+                  }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-gray-600 font-medium">
@@ -464,11 +490,10 @@ export default function UserDashboard({
                     </div>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      activeData.queue.status === "active"
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${activeData.queue.status === "active"
                         ? "bg-green-100 text-green-700"
                         : "bg-yellow-100 text-yellow-700"
-                    }`}
+                      }`}
                   >
                     {activeData.queue.status === "active" ? "Active" : "Paused"}
                   </span>
@@ -476,27 +501,25 @@ export default function UserDashboard({
 
                 {/* Status Message */}
                 <div
-                  className={`mt-6 p-4 rounded-lg ${
-                    activeData.token.status === "near"
+                  className={`mt-6 p-4 rounded-lg ${activeData.token.status === "near"
                       ? "bg-orange-50 border border-orange-200"
                       : activeData.token.status === "served"
-                      ? "bg-green-50 border border-green-200"
-                      : activeData.token.status === "cancelled"
-                      ? "bg-red-50 border border-red-200"
-                      : "bg-blue-50 border border-blue-200"
-                  }`}
+                        ? "bg-green-50 border border-green-200"
+                        : activeData.token.status === "cancelled"
+                          ? "bg-red-50 border border-red-200"
+                          : "bg-blue-50 border border-blue-200"
+                    }`}
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className={`mt-0.5 ${
-                        activeData.token.status === "near"
+                      className={`mt-0.5 ${activeData.token.status === "near"
                           ? "text-orange-600"
                           : activeData.token.status === "served"
-                          ? "text-green-600"
-                          : activeData.token.status === "cancelled"
-                          ? "text-red-600"
-                          : "text-blue-600"
-                      }`}
+                            ? "text-green-600"
+                            : activeData.token.status === "cancelled"
+                              ? "text-red-600"
+                              : "text-blue-600"
+                        }`}
                     >
                       {activeData.token.status === "near" ? (
                         <AlertCircle className="w-5 h-5" />
@@ -509,15 +532,14 @@ export default function UserDashboard({
                       )}
                     </div>
                     <p
-                      className={`text-sm font-medium ${
-                        activeData.token.status === "near"
+                      className={`text-sm font-medium ${activeData.token.status === "near"
                           ? "text-orange-800"
                           : activeData.token.status === "served"
-                          ? "text-green-800"
-                          : activeData.token.status === "cancelled"
-                          ? "text-red-800"
-                          : "text-blue-800"
-                      }`}
+                            ? "text-green-800"
+                            : activeData.token.status === "cancelled"
+                              ? "text-red-800"
+                              : "text-blue-800"
+                        }`}
                     >
                       {activeData.reassurance.message}
                     </p>
@@ -527,22 +549,22 @@ export default function UserDashboard({
                 {/* Action Buttons */}
                 {(activeData.token.status === "waiting" ||
                   activeData.token.status === "near") && (
-                  <div className="mt-6 flex gap-3">
-                    <button
-                      onClick={handleReschedule}
-                      disabled={isRescheduleOpen}
-                      className="flex-1 py-3 px-4 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                    >
-                      {isRescheduleOpen ? "Rescheduling..." : "Reschedule"}
-                    </button>
-                    <button
-                      onClick={handleLeaveQueue}
-                      className="flex-1 py-3 px-4 bg-white border-2 border-red-300 text-red-600 font-semibold rounded-lg hover:bg-red-50 transition-colors"
-                    >
-                      Leave Queue
-                    </button>
-                  </div>
-                )}
+                    <div className="mt-6 flex gap-3">
+                      <button
+                        onClick={handleReschedule}
+                        disabled={isRescheduleOpen}
+                        className="flex-1 py-3 px-4 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                      >
+                        {isRescheduleOpen ? "Rescheduling..." : "Reschedule"}
+                      </button>
+                      <button
+                        onClick={handleLeaveQueue}
+                        className="flex-1 py-3 px-4 bg-white border-2 border-red-300 text-red-600 font-semibold rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        Leave Queue
+                      </button>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
