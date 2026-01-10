@@ -51,10 +51,10 @@ export default function AdminSidebar() {
 
   const linkStyle = (href: string) => {
     const active = isActive(href);
-    return `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+    return `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 group ${
       active
-        ? "bg-[#2563EB] text-white shadow-md"
-        : "text-[#475569] hover:bg-[#F8FAFC] hover:text-[#1E293B]"
+        ? "bg-sky-600 text-white shadow-md"
+        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
     }`;
   };
 
@@ -63,7 +63,7 @@ export default function AdminSidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-[60] p-2 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-[60] p-2 bg-white rounded-lg shadow-lg border border-slate-200 hover:bg-slate-50 transition-colors"
         aria-label="Toggle menu"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -80,30 +80,30 @@ export default function AdminSidebar() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed left-0 top-0 z-50 h-screen bg-white border-r border-gray-200 
+          fixed left-0 top-0 z-50 h-screen bg-white border-r border-slate-200 
           flex flex-col transition-transform duration-300 ease-in-out
           w-72 lg:w-64 xl:w-72
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-6 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#2563EB] flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center shadow-md">
               <LayoutDashboard size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-[#1E293B] tracking-tight">
+              <h1 className="text-lg font-bold text-slate-900 tracking-tight">
                 Admin Portal
               </h1>
-              <p className="text-xs text-[#94A3B8]">System Management</p>
+              <p className="text-xs text-slate-500">System Management</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-[#94A3B8]/50 [&::-webkit-scrollbar-track]:bg-transparent">
-          <p className="px-4 text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mb-4">
+          <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
             Navigation
           </p>
           {navItems.map((item) => (
@@ -117,7 +117,7 @@ export default function AdminSidebar() {
                 className={
                   isActive(item.href)
                     ? "text-white"
-                    : "text-[#475569] group-hover:text-[#1E293B]"
+                    : "text-slate-600 group-hover:text-slate-900"
                 }
               >
                 {item.icon}
@@ -131,30 +131,30 @@ export default function AdminSidebar() {
         </nav>
 
         {/* Profile Section */}
-        <div className="p-4 border-t border-gray-100">
-          <p className="px-4 text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mb-3">
+        <div className="p-4 border-t border-slate-100">
+          <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
             Account
           </p>
 
           <Link
             href="/admin/profile"
             onClick={() => setIsOpen(false)}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mb-2 ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 mb-2 ${
               pathname === "/admin/profile"
-                ? "bg-[#F8FAFC] text-[#1E293B]"
-                : "text-[#475569] hover:bg-[#F8FAFC] hover:text-[#1E293B]"
+                ? "bg-slate-100 text-slate-900"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             }`}
           >
-            <div className="w-8 h-8 rounded-full bg-[#F8FAFC] border border-[#94A3B8] flex items-center justify-center">
-              <User size={16} className="text-[#475569]" />
+            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center">
+              <User size={16} className="text-slate-600" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium">Admin User</p>
-              <p className="text-xs text-[#94A3B8]">View Profile</p>
+              <p className="text-xs text-slate-500">View Profile</p>
             </div>
           </Link>
 
-          <button className="flex items-center gap-3 px-4 py-3 w-full text-[#475569] hover:text-[#DC2626] hover:bg-red-50 rounded-xl transition-all duration-200 group">
+          <button className="flex items-center gap-3 px-4 py-3 w-full text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-105 group">
             <LogOut
               size={20}
               className="group-hover:translate-x-1 transition-transform"

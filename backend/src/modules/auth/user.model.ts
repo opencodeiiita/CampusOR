@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
 export type UserRole = "user" | "operator" | "admin";
 
@@ -11,6 +11,9 @@ export interface IUser extends Document {
   collegeEmail?: string; // Required for "user" role
   department?: string; // Required for "operator" role
   position?: string; // Required for "operator" role
+  // Queue-related fields
+  queueId?: Types.ObjectId; // Reference to queue if user is in queue
+  isInQueue?: boolean; // Flag to indicate if user is currently in queue
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +54,16 @@ const userSchema = new Schema<IUser>(
     position: {
       type: String,
       trim: true,
+    },
+    // Queue-related fields
+    queueId: {
+      type: Schema.Types.ObjectId,
+      ref: "Queue",
+      required: false,
+    },
+    isInQueue: {
+      type: Boolean,
+      default: false,
     },
   },
   {

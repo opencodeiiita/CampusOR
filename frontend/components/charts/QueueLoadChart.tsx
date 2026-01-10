@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -9,10 +10,71 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { queueLoadMock } from "./MockData";
+import { fetchQueueLoadAnalytics, QueueLoad } from "@/lib/api/admin";
 import ChartWrapper from "./ChartWrapper";
 
 export default function QueueLoadChart() {
+  const [data, setData] = useState<QueueLoad[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const analyticsData = await fetchQueueLoadAnalytics();
+        setData(analyticsData);
+      } catch (err) {
+        console.error("Failed to load queue load analytics:", err);
+        setError("Failed to load queue load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <ChartWrapper
+        title="Queue Load Throughout the Day"
+        description="Displays how the number of active tokens changes across different time intervals."
+      >
+        <div className="flex items-center justify-center h-[260px]">
+          <p className="text-gray-500">Loading chart data...</p>
+        </div>
+      </ChartWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <ChartWrapper
+        title="Queue Load Throughout the Day"
+        description="Displays how the number of active tokens changes across different time intervals."
+      >
+        <div className="flex items-center justify-center h-[260px]">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </ChartWrapper>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <ChartWrapper
+        title="Queue Load Throughout the Day"
+        description="Displays how the number of active tokens changes across different time intervals."
+      >
+        <div className="flex items-center justify-center h-[260px]">
+          <p className="text-gray-500">No data available for today</p>
+        </div>
+      </ChartWrapper>
+    );
+  }
+
   return (
     <ChartWrapper
       title="Queue Load Throughout the Day"
@@ -20,7 +82,7 @@ export default function QueueLoadChart() {
     >
       <ResponsiveContainer width="100%" height={260}>
         <LineChart
-          data={queueLoadMock}
+          data={data}
           margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />

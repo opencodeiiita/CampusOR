@@ -28,40 +28,56 @@ export default function CreateQueuePage() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Create New Queue</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Queue Name</label>
-          <input
-            type="text"
-            required
-            className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-            placeholder="e.g., Admin Office A"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Location</label>
-          <input
-            type="text"
-            required
-            className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-            placeholder="e.g., Ground Floor"
-            value={formData.location}
-            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? "Creating..." : "Create Queue"}
-        </button>
-      </form>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 transition-all duration-300 hover:shadow-2xl animate-in fade-in zoom-in">
+        <h1 className="text-2xl font-semibold text-slate-900 mb-6">
+          Create New Queue
+        </h1>
+        {error && (
+          <p className="text-red-500 mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
+            {error}
+          </p>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Queue Name
+            </label>
+            <input
+              type="text"
+              required
+              className="mt-1 block w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+              placeholder="e.g., Admin Office A"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Location
+            </label>
+            <input
+              type="text"
+              required
+              className="mt-1 block w-full rounded-lg border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+              placeholder="e.g., Ground Floor"
+              value={formData.location}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Creating..." : "Create Queue"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

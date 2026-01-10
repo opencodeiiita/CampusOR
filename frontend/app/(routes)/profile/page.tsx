@@ -8,16 +8,12 @@ import ProfileLayout from "@/app/components/profile/ProfileLayout";
 import UserProfileSection from "@/app/components/profile/UserProfileSection";
 import { profileMock } from "@/lib/mock/profile";
 
-
 export default function ProfilePage() {
   const profile = profileMock;
 
   return (
     <ProfileLayout>
-      <ProfileHeader
-        name={profile.name}
-        role={profile.role}
-      />
+      <ProfileHeader name={profile.name} role={profile.role} />
 
       <CommonInfoSection
         name={profile.name}
