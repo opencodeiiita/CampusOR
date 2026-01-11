@@ -59,10 +59,12 @@ export async function createQueue(req: AuthRequest, res: Response) {
 // 2: Generate token for a user in a queue
 export async function generateToken(req: Request, res: Response) {
   const { queueId } = req.params;
+  console.log(`[Token] Request to generate token for queue: ${queueId}`);
 
   // We rely on the service to handle the logic, but we could add
   // checks here if the queue is active before calling service
   const result = await TokenService.generateToken(queueId);
+  console.log(`[Token] Result:`, result);
 
   if (!result.success) {
     return res.status(400).json(result);

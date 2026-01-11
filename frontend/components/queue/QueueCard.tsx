@@ -1,10 +1,13 @@
 import { Queue } from "./queue.types";
+import { useRouter } from "next/navigation";
 
 interface QueueCardProps {
   queue: Queue;
 }
 
 export default function QueueCard({ queue }: QueueCardProps) {
+  const router = useRouter();
+
   const getAccentColor = (status: string) => {
     switch (status) {
       case "open":
@@ -88,16 +91,29 @@ export default function QueueCard({ queue }: QueueCardProps) {
           </div>
         </div>
 
-        {/* Join Queue Button */}
-        <button
-          className="w-full bg-[#2563EB] text-white py-3 rounded-md font-bold text-base hover:bg-[#1d4ed8] transition-colors"
-          onClick={() => {
-            // Placeholder for join queue action
-            console.log("Join queue:", queue.queueId);
-          }}
-        >
-          Join Queue
-        </button>
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* View Kiosk Button */}
+          <button
+            className="bg-slate-700 text-white py-3 rounded-md font-bold text-base hover:bg-slate-600 transition-colors"
+            onClick={() => {
+              router.push(`/kiosk/${queue.queueId}`);
+            }}
+          >
+            View
+          </button>
+
+          {/* Join Queue Button */}
+          <button
+            className="bg-[#2563EB] text-white py-3 rounded-md font-bold text-base hover:bg-[#1d4ed8] transition-colors"
+            onClick={() => {
+              // Placeholder for join queue action
+              console.log("Join queue:", queue.queueId);
+            }}
+          >
+            Join Queue
+          </button>
+        </div>
       </div>
     </div>
   );

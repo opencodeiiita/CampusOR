@@ -47,7 +47,8 @@ export class TokenService {
           createdAt: token.createdAt.toISOString(),
         },
       };
-    } catch {
+    } catch (error) {
+      console.error("Token generation error:", error);
       return {
         success: false,
         error: "Failed to generate token",
