@@ -173,7 +173,8 @@ export async function getQueuesForUsers(req: Request, res: Response) {
         }
 
         return {
-          queueId: `Q-${queue._id.toString().slice(-4)}`,
+          // queueId: `Q-${queue._id.toString().slice(-4)}`,
+          queueId: queue._id.toString(),
           queueName: queue.name,
           location: queue.location,
           counterNumber: 1, // Default value, can be enhanced later

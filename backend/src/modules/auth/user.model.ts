@@ -7,13 +7,17 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: UserRole;
+
   // Role-specific fields
   collegeEmail?: string; // Required for "user" role
   department?: string; // Required for "operator" role
   position?: string; // Required for "operator" role
+
   // Queue-related fields
-  queueId?: Types.ObjectId; // Reference to queue if user is in queue
+  currentQueue?: Types.ObjectId; // Reference to queue if user is in queue
   isInQueue?: boolean; // Flag to indicate if user is currently in queue
+  pastQueues?: Types.ObjectId[]; // Reference to queues if user has been in queue
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,8 +59,9 @@ const userSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
+
     // Queue-related fields
-    queueId: {
+    currentQueue: {
       type: Schema.Types.ObjectId,
       ref: "Queue",
       required: false,
@@ -65,6 +70,10 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    pastQueues: [{
+      type: Schema.Types.ObjectId,
+      ref: "Queue",
+    }],
   },
   {
     timestamps: true,
