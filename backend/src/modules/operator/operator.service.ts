@@ -1,4 +1,5 @@
-import { Queue, Token, TokenStatus } from '../queue/queue.model.js';
+import { Queue, Token, TokenStatus } from "../queue/queue.model.js";
+import { User } from "../auth/user.model.js";
 
 export interface OperatorResponse {
   success: boolean;
@@ -22,16 +23,33 @@ export class OperatorService {
   // Serve next token in queue
   static async serveNextToken(queueId: string): Promise<OperatorResponse> {
     try {
+      // First, mark any currently served token as completed and clear user state
+      const currentlyServed = await Token.findOne({
+        queue: queueId,
+        status: TokenStatus.SERVED,
+      }).sort({ seq: -1 });
+
+      if (currentlyServed) {
+        currentlyServed.status = TokenStatus.COMPLETED;
+        await currentlyServed.save();
+
+        // Clear the user's queue status
+        await User.updateMany(
+          { currentQueue: queueId, isInQueue: true },
+          { $set: { isInQueue: false }, $unset: { currentQueue: 1 } }
+        );
+      }
+
       // Find the next waiting token with lowest sequence number
       const nextToken = await Token.findOne({
         queue: queueId,
-        status: TokenStatus.WAITING
+        status: TokenStatus.WAITING,
       }).sort({ seq: 1 });
 
       if (!nextToken) {
         return {
           success: false,
-          error: "No waiting tokens found in queue"
+          error: "No waiting tokens found in queue",
         };
       }
 
@@ -47,12 +65,12 @@ export class OperatorService {
           seq: nextToken.seq,
           status: nextToken.status,
           createdAt: nextToken.createdAt.toISOString(),
-        }
+        },
       };
     } catch {
       return {
         success: false,
-        error: "Failed to serve next token"
+        error: "Failed to serve next token",
       };
     }
   }
@@ -63,13 +81,13 @@ export class OperatorService {
       // Find the current token (last served token)
       const currentToken = await Token.findOne({
         queue: queueId,
-        status: TokenStatus.SERVED
+        status: TokenStatus.SERVED,
       }).sort({ seq: -1 });
 
       if (!currentToken) {
         return {
           success: false,
-          error: "No current token to skip"
+          error: "No current token to skip",
         };
       }
 
@@ -85,12 +103,12 @@ export class OperatorService {
           seq: currentToken.seq,
           status: currentToken.status,
           createdAt: currentToken.createdAt.toISOString(),
-        }
+        },
       };
     } catch {
       return {
         success: false,
-        error: "Failed to skip current token"
+        error: "Failed to skip current token",
       };
     }
   }
@@ -101,13 +119,13 @@ export class OperatorService {
       // Find the last skipped token
       const skippedToken = await Token.findOne({
         queue: queueId,
-        status: TokenStatus.SKIPPED
+        status: TokenStatus.SKIPPED,
       }).sort({ seq: -1 });
 
       if (!skippedToken) {
         return {
           success: false,
-          error: "No skipped token to recall"
+          error: "No skipped token to recall",
         };
       }
 
@@ -123,12 +141,12 @@ export class OperatorService {
           seq: skippedToken.seq,
           status: skippedToken.status,
           createdAt: skippedToken.createdAt.toISOString(),
-        }
+        },
       };
     } catch {
       return {
         success: false,
-        error: "Failed to recall token"
+        error: "Failed to recall token",
       };
     }
   }
@@ -145,7 +163,7 @@ export class OperatorService {
       if (!queue) {
         return {
           success: false,
-          error: "Queue not found"
+          error: "Queue not found",
         };
       }
 
@@ -155,13 +173,13 @@ export class OperatorService {
           id: queue._id.toString(),
           name: queue.name,
           isActive: queue.isActive,
-          nextSequence: queue.nextSequence
-        }
+          nextSequence: queue.nextSequence,
+        },
       };
     } catch {
       return {
         success: false,
-        error: "Failed to pause queue"
+        error: "Failed to pause queue",
       };
     }
   }
@@ -178,7 +196,7 @@ export class OperatorService {
       if (!queue) {
         return {
           success: false,
-          error: "Queue not found"
+          error: "Queue not found",
         };
       }
 
@@ -188,13 +206,13 @@ export class OperatorService {
           id: queue._id.toString(),
           name: queue.name,
           isActive: queue.isActive,
-          nextSequence: queue.nextSequence
-        }
+          nextSequence: queue.nextSequence,
+        },
       };
     } catch {
       return {
         success: false,
-        error: "Failed to resume queue"
+        error: "Failed to resume queue",
       };
     }
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { subscribeToQueue } from "@/lib/websocket";
+import { apiService } from "@/app/services/api";
 import { useEffect, useMemo, useState } from "react";
 
 type QueueSnapshot = {
@@ -25,8 +26,49 @@ type Props = {
 export default function Kiosk({ queueId }: Props) {
   const [snapshot, setSnapshot] = useState<QueueSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!queueId) return;
+
+    // Fetch initial data
+    const loadInitialData = async () => {
+      try {
+        setLoading(true);
+        const data = await apiService.get(
+          `/queues/${queueId}/operator-view`,
+          false
+        );
+
+        // Transform to snapshot format
+        const initialSnapshot: QueueSnapshot = {
+          queue: {
+            id: data.queue.id,
+            name: data.queue.name,
+            location: data.queue.location,
+            status: data.queue.status,
+          },
+          queueId: data.queue.id,
+          tokens: data.tokens.map((t: any) => ({
+            id: t.id,
+            seq: t.number,
+            status: t.status,
+          })),
+        };
+
+        setSnapshot(initialSnapshot);
+        setError(null);
+      } catch (err: any) {
+        console.error("Failed to load initial kiosk data:", err);
+        setError(err.message || "Failed to load queue data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialData();
+
+    // Subscribe to WebSocket updates
     const unsubscribe = subscribeToQueue(queueId, {
       onUpdate: (payload) => {
         setSnapshot(payload as QueueSnapshot);
@@ -53,12 +95,14 @@ export default function Kiosk({ queueId }: Props) {
     return served[0] || null;
   }, [snapshot]);
 
-  if (!snapshot) {
+  if (loading || !snapshot) {
     return (
       <div className="h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-white mx-auto mb-4" />
-          <p className="text-slate-200">Connecting to queue...</p>
+          <p className="text-slate-200">
+            {loading ? "Loading queue..." : "Connecting to queue..."}
+          </p>
           {error && <p className="text-red-300 mt-2">{error}</p>}
         </div>
       </div>
@@ -90,7 +134,9 @@ export default function Kiosk({ queueId }: Props) {
               {nowServing ? formatToken(nowServing.seq) : "--"}
             </div>
             <p className="mt-4 text-slate-400">
-              {nowServing ? "Please proceed to the counter" : "Awaiting next token"}
+              {nowServing
+                ? "Please proceed to the counter"
+                : "Awaiting next token"}
             </p>
           </div>
 
@@ -106,7 +152,9 @@ export default function Kiosk({ queueId }: Props) {
                     key={token.id}
                     className="rounded-xl border-2 border-slate-600 bg-slate-800 p-4 text-slate-100"
                   >
-                    <div className="text-2xl font-bold">{formatToken(token.seq)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatToken(token.seq)}
+                    </div>
                     <div className="text-xs mt-1 text-slate-400">
                       #{index + 1} in queue
                     </div>

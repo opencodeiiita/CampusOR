@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   ChevronRight,
+  Activity,
 } from "lucide-react";
 
 interface NavItem {
@@ -27,6 +28,11 @@ const navItems: NavItem[] = [
     href: "/dashboard/user",
     label: "Dashboard",
     icon: <LayoutDashboard size={20} />,
+  },
+  {
+    href: "/dashboard/user/queues",
+    label: "Browse Queues",
+    icon: <Activity size={20} />,
   },
   {
     href: "/dashboard/user/myqueue",
