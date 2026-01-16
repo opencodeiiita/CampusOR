@@ -1,0 +1,26 @@
+### Health Check
+GET http://localhost:8001/health
+
+### Predict Request
+POST http://localhost:8001/predict
+Content-Type: application/json
+
+{
+  "tokensAhead": 5,
+  "activeCounters": 2,
+  "hoursOfDay": 14,
+  "dayOfWeek": 3,
+  "avgServiceTime": 2.5
+}
+
+### Invalid Predict Request (negative value)
+POST http://localhost:8001/predict
+Content-Type: application/json
+
+{
+  "tokensAhead": -1,
+  "activeCounters": 2,
+  "hoursOfDay": 14,
+  "dayOfWeek": 3,
+  "avgServiceTime": 2.5
+}
