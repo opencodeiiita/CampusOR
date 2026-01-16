@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import Footer from "../../../components/footer/Footer";
 
 type UserRole = "user" | "operator";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -59,7 +60,7 @@ export default function SignupPage() {
         requestBody.position = position;
       }
 
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,7 +75,7 @@ export default function SignupPage() {
       }
 
       // Auto-login after successful registration
-      const loginResponse = await fetch("/api/auth/login", {
+      const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

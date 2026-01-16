@@ -3,7 +3,7 @@
  * Handles all admin analytics API calls
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Helper to get auth headers
 const getAuthHeaders = (): HeadersInit => {
@@ -54,7 +54,7 @@ export interface TokenStatusCount {
  * Fetch dashboard summary with overview metrics
  */
 export const fetchDashboardSummary = async (): Promise<DashboardSummary> => {
-  const response = await fetch(`${API_BASE_URL}/admin/dashboard/summary`, {
+  const response = await fetch(`${API_BASE_URL}/api/admin/dashboard/summary`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -70,7 +70,7 @@ export const fetchDashboardSummary = async (): Promise<DashboardSummary> => {
  * Fetch queue load analytics (active tokens over time)
  */
 export const fetchQueueLoadAnalytics = async (): Promise<QueueLoad[]> => {
-  const response = await fetch(`${API_BASE_URL}/admin/analytics/queue-load`, {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/queue-load`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -86,7 +86,7 @@ export const fetchQueueLoadAnalytics = async (): Promise<QueueLoad[]> => {
  * Fetch tokens served per hour analytics
  */
 export const fetchTokensServedAnalytics = async (): Promise<TokensServed[]> => {
-  const response = await fetch(`${API_BASE_URL}/admin/analytics/tokens-served`, {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/tokens-served`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -102,7 +102,7 @@ export const fetchTokensServedAnalytics = async (): Promise<TokensServed[]> => {
  * Fetch average wait time per queue analytics
  */
 export const fetchAvgWaitTimeAnalytics = async (): Promise<AvgWaitTime[]> => {
-  const response = await fetch(`${API_BASE_URL}/admin/analytics/avg-wait-time`, {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/avg-wait-time`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -118,7 +118,7 @@ export const fetchAvgWaitTimeAnalytics = async (): Promise<AvgWaitTime[]> => {
  * Fetch token status distribution analytics
  */
 export const fetchTokenStatusAnalytics = async (): Promise<TokenStatusCount[]> => {
-  const response = await fetch(`${API_BASE_URL}/admin/analytics/token-status`, {
+  const response = await fetch(`${API_BASE_URL}/api/admin/analytics/token-status`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
