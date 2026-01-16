@@ -1,7 +1,6 @@
 "use client";
 
 import { subscribeToQueue } from "@/lib/websocket";
-import { apiService } from "@/app/services/api";
 import { useEffect, useMemo, useState } from "react";
 
 type QueueSnapshot = {
@@ -26,58 +25,34 @@ type Props = {
 export default function Kiosk({ queueId }: Props) {
   const [snapshot, setSnapshot] = useState<QueueSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     if (!queueId) return;
 
-    // Fetch initial data
-    const loadInitialData = async () => {
-      try {
-        setLoading(true);
-        const data = await apiService.get(
-          `/queues/${queueId}/operator-view`,
-          false
-        );
-
-        // Transform to snapshot format
-        const initialSnapshot: QueueSnapshot = {
-          queue: {
-            id: data.queue.id,
-            name: data.queue.name,
-            location: data.queue.location,
-            status: data.queue.status,
-          },
-          queueId: data.queue.id,
-          tokens: data.tokens.map((t: any) => ({
-            id: t.id,
-            seq: t.number,
-            status: t.status,
-          })),
-        };
-
-        setSnapshot(initialSnapshot);
-        setError(null);
-      } catch (err: any) {
-        console.error("Failed to load initial kiosk data:", err);
-        setError(err.message || "Failed to load queue data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInitialData();
-
-    // Subscribe to WebSocket updates
+    // Subscribe to WebSocket updates - initial snapshot will come from socket
     const unsubscribe = subscribeToQueue(queueId, {
       onUpdate: (payload) => {
         setSnapshot(payload as QueueSnapshot);
         setError(null);
       },
-      onError: (err) => setError(err.message || "Socket error"),
+      onError: (err) => {
+        setError(err.message || "Socket error");
+      },
+      onConnect: () => {
+        setIsConnected(true);
+        setError(null);
+      },
+      onDisconnect: () => {
+        setIsConnected(false);
+      },
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      setSnapshot(null);
+      setIsConnected(false);
+    };
   }, [queueId]);
 
   const waitingTokens = useMemo(() => {
@@ -95,15 +70,20 @@ export default function Kiosk({ queueId }: Props) {
     return served[0] || null;
   }, [snapshot]);
 
-  if (loading || !snapshot) {
+  // Loading/connecting state
+  if (!snapshot) {
     return (
       <div className="h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-white mx-auto mb-4" />
-          <p className="text-slate-200">
-            {loading ? "Loading queue..." : "Connecting to queue..."}
-          </p>
-          {error && <p className="text-red-300 mt-2">{error}</p>}
+          <p className="text-slate-200">Connecting to queue...</p>
+          {error && (
+            <p className="text-red-300 mt-2 text-sm">
+              {error}
+              <br />
+              <span className="text-slate-400">Retrying...</span>
+            </p>
+          )}
         </div>
       </div>
     );
@@ -116,12 +96,26 @@ export default function Kiosk({ queueId }: Props) {
     <div className="h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
       <div className="relative z-10 flex flex-col h-full">
         {/* HEADER */}
-        <div className="h-[15vh] flex items-center justify-center border-b border-slate-700">
-          <div className="text-center">
+        <div className="h-[15vh] flex items-center justify-between border-b border-slate-700 px-6">
+          <div className="flex-1"></div>
+          <div className="text-center flex-1">
             <h1 className="text-3xl md:text-4xl font-extrabold">
               {snapshot.queue.name}
             </h1>
             <p className="text-slate-300 mt-2">{snapshot.queue.location}</p>
+          </div>
+          <div className="flex-1 flex justify-end">
+            {/* Connection status indicator */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`h-2 w-2 rounded-full ${
+                  isConnected ? "bg-green-400 animate-pulse" : "bg-red-400"
+                }`}
+              />
+              <span className="text-xs text-slate-400">
+                {isConnected ? "Live" : "Disconnected"}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -150,7 +144,7 @@ export default function Kiosk({ queueId }: Props) {
                 nextTokens.map((token, index) => (
                   <div
                     key={token.id}
-                    className="rounded-xl border-2 border-slate-600 bg-slate-800 p-4 text-slate-100"
+                      className="rounded-xl border-2 border-slate-600 bg-slate-800 p-4 text-slate-100"
                   >
                     <div className="text-2xl font-bold">
                       {formatToken(token.seq)}

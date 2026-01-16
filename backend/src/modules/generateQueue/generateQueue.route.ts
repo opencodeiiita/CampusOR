@@ -7,7 +7,7 @@ const router = Router();
 router.post(
   "/",
   verifyJWT,
-  authorize("operator"), //  ONLY OPERATOR
+  authorize("operator", "admin"), // Operators and admins
   generateQueue
 );
 

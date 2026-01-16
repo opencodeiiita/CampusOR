@@ -4,8 +4,11 @@ import {
   sendQueueAlmostReadyEmail,
   sendQueueReadyEmail,
 } from "./email.controller.js";
+import { authorize, verifyJWT } from "../../middlewares/auth.js";
 
 const notificationRouter = Router();
+
+notificationRouter.use(verifyJWT, authorize("operator", "admin"));
 
 notificationRouter.post("/queue/delayed", sendQueueDelayedEmail);
 

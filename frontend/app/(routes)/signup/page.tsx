@@ -88,8 +88,13 @@ export default function SignupPage() {
         throw new Error(loginData.message || "Login failed");
       }
 
-      login(loginData.token);
-      router.push("/");
+      login(loginData.token, loginData.user);
+
+      if (loginData.user?.role === "operator") {
+        router.push("/dashboard/operator");
+      } else {
+        router.push("/dashboard/user");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

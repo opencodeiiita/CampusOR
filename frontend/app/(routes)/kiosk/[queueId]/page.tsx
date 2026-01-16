@@ -1,13 +1,15 @@
 import Kiosk from "../../../../components/kiosk/Kiosk";
 
 type PageProps = {
-  params: { queueId: string };
+  params: Promise<{ queueId: string }>;
 };
 
-export default function KioskQueuePage({ params }: PageProps) {
+export default async function KioskQueuePage({ params }: PageProps) {
+  const { queueId } = await params;
+
   return (
     <main className="h-screen w-screen overflow-hidden">
-      <Kiosk queueId={params.queueId} />
+      <Kiosk queueId={queueId} />
     </main>
   );
 }

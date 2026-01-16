@@ -1,11 +1,13 @@
 'use client';
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard,Activity,User,LogOut } from "lucide-react";
+import { LayoutDashboard,Activity,LogOut } from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function OperatorSidebar(){
     const pathname=usePathname();
     const router = useRouter();
+    const { logout } = useAuth();
     const linkStyle=(href:string)=>{
         const isActive=pathname===href || pathname.startsWith(`${href}/`);
         return `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
@@ -36,7 +38,7 @@ export default function OperatorSidebar(){
             <div className="p-4 border-t border-gray-100">
                 <button 
                     onClick={() => {
-                        localStorage.removeItem("campusor_jwt");
+                        logout();
                         router.push("/login");
                     }}
                     className="flex items-center gap-3 px-3 sm:px-4 py-3 w-full text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors group"

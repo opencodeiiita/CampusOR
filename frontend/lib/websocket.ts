@@ -25,6 +25,8 @@ type UpdateQueuePayload = {
 type SubscribeHandlers = {
   onUpdate?: (snapshot: UpdateQueuePayload) => void;
   onError?: (error: { message: string }) => void;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
 };
 
 const SOCKET_URL =
@@ -41,13 +43,22 @@ function getSocket(): Socket {
   socket = io(SOCKET_URL, {
     transports: ["websocket"],
     withCredentials: true,
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    reconnectionAttempts: Infinity,
   });
 
   socket.on("connect", () => {
+    console.log("Socket connected");
     // Re-subscribe to all rooms after reconnect
     subscribedQueues.forEach((queueId) => {
       socket?.emit("subscribeQueue", { queueId });
     });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected");
   });
 
   return socket;
@@ -55,25 +66,36 @@ function getSocket(): Socket {
 
 export function subscribeToQueue(queueId: string, handlers: SubscribeHandlers) {
   const client = getSocket();
-  const { onUpdate, onError } = handlers;
+  const { onUpdate, onError, onConnect, onDisconnect } = handlers;
 
   const handleUpdate = (payload: UpdateQueuePayload) => {
     if (payload.queueId !== queueId) return;
     onUpdate?.(payload);
   };
   const handleError = (err: { message: string }) => onError?.(err);
+  const handleConnect = () => onConnect?.();
+  const handleDisconnect = () => onDisconnect?.();
 
   client.on("updateQueue", handleUpdate);
   client.on("error", handleError);
+  client.on("connect", handleConnect);
+  client.on("disconnect", handleDisconnect);
 
   subscribedQueues.add(queueId);
   client.emit("subscribeQueue", { queueId });
+
+  // If already connected, trigger onConnect immediately
+  if (client.connected) {
+    onConnect?.();
+  }
 
   return () => {
     subscribedQueues.delete(queueId);
     client.emit("unsubscribeQueue", { queueId });
     client.off("updateQueue", handleUpdate);
     client.off("error", handleError);
+    client.off("connect", handleConnect);
+    client.off("disconnect", handleDisconnect);
   };
 }
 

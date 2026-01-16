@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/AuthContext";
 import {
   LayoutDashboard,
   ListOrdered,
@@ -40,6 +42,8 @@ const navItems: NavItem[] = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const isActive = (href: string) => {
@@ -154,7 +158,13 @@ export default function AdminSidebar() {
             </div>
           </Link>
 
-          <button className="flex items-center gap-3 px-4 py-3 w-full text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-105 group">
+          <button
+            onClick={() => {
+              logout();
+              router.push("/login");
+            }}
+            className="flex items-center gap-3 px-4 py-3 w-full text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 hover:scale-105 group"
+          >
             <LogOut
               size={20}
               className="group-hover:translate-x-1 transition-transform"

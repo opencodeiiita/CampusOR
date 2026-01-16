@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import Footer from "../../../components/footer/Footer";
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,15 +35,20 @@ export default function LoginPage() {
         throw new Error(data.message || "Login failed");
       }
 
-      login(data.token);
+      login(data.token, data.user);
 
-      
-      if (data.user?.role === "operator") {
-        router.push("/dashboard/operator");
-      
-      } else {
-        router.push("/");
-      }
+      const next = searchParams.get("next");
+      const safeNext =
+        next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+
+      const fallbackRoute =
+        data.user?.role === "admin"
+          ? "/admin"
+          : data.user?.role === "operator"
+            ? "/dashboard/operator"
+            : "/dashboard/user";
+
+      router.replace(safeNext || fallbackRoute);
     } catch (err: any) {
       setError(err.message);
     } finally {

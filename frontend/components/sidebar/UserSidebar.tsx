@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 import {
   LayoutDashboard,
   History,
@@ -58,6 +59,8 @@ const navItems: NavItem[] = [
 
 export default function UserSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const isActive = (href: string) => {
@@ -119,14 +122,17 @@ export default function UserSidebar() {
 
           {/* Footer */}
           <div className="p-4 border-t border-gray-200">
-            <Link
-              href="/logout"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+            <button
+              onClick={() => {
+                logout();
+                setIsOpen(false);
+                router.push("/login");
+              }}
+              className="flex items-center gap-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
             >
               <LogOut size={20} />
               <span className="font-medium">Logout</span>
-            </Link>
+            </button>
           </div>
         </div>
       </aside>

@@ -9,7 +9,12 @@ const router = Router();
 
 router.use("/auth", authRouter);
 router.use("/queues", queueRouter);
-router.use("/user-status", verifyJWT, userStatusRouter);
+router.use(
+  "/user-status",
+  verifyJWT,
+  authorize("user", "operator", "admin"),
+  userStatusRouter
+);
 router.use("/operator", operatorRouter);
 
 export default router;
