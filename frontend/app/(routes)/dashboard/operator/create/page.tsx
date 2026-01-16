@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiService } from "@/app/services/api";
+import { toast } from "sonner";
 
 export default function CreateQueuePage() {
   const router = useRouter();
@@ -17,11 +18,13 @@ export default function CreateQueuePage() {
     try {
       const res = await apiService.post("/queues", formData, true); // true = include auth
       if (res.success) {
-        // Redirect to the dashboard with the new queue ID
-        router.push(`/dashboard/operator/queue/${res.queue.id}`);
+        toast.success("Queue created successfully.");
+        router.push("/dashboard/operator/queues");
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to create queue");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create queue";
+      setError(message);
     } finally {
       setLoading(false);
     }
