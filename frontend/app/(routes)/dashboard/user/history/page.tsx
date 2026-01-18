@@ -14,69 +14,17 @@ import { apiService } from "@/app/services/api";
 
 // Types matching backend schema
 interface QueueHistoryItem {
-  id: string;
   queueId: string;
   queueName: string;
   location: string;
-  tokenNumber: string;
+  token: string;
   joinedAt: string;
-  servedAt?: string;
-  cancelledAt?: string;
-  status: "served" | "cancelled" | "completed";
-  waitTime: number; // in minutes
-  serviceTime?: number; // in minutes
+  servedAt: string | null;
+  cancelledAt: string | null;
+  status: "completed" | "cancelled";
+  waitTimeMinutes: number;
 }
 
-// Mock data for UI rendering - clearly marked for easy transition to real API
-const mockHistoryData: QueueHistoryItem[] = [
-  {
-    id: "1",
-    queueId: "q1",
-    queueName: "Cafeteria Lunch Queue",
-    location: "Main Cafeteria - Building A",
-    tokenNumber: "C042",
-    joinedAt: "2024-01-15T12:30:00Z",
-    servedAt: "2024-01-15T12:45:00Z",
-    status: "served",
-    waitTime: 15,
-    serviceTime: 8,
-  },
-  {
-    id: "2",
-    queueId: "q2",
-    queueName: "Library Computer Lab",
-    location: "Central Library - 2nd Floor",
-    tokenNumber: "L128",
-    joinedAt: "2024-01-14T14:20:00Z",
-    cancelledAt: "2024-01-14T15:00:00Z",
-    status: "cancelled",
-    waitTime: 40,
-  },
-  {
-    id: "3",
-    queueId: "q3",
-    queueName: "Student Services",
-    location: "Admin Building - Ground Floor",
-    tokenNumber: "S067",
-    joinedAt: "2024-01-13T10:15:00Z",
-    servedAt: "2024-01-13T10:35:00Z",
-    status: "completed",
-    waitTime: 20,
-    serviceTime: 15,
-  },
-  {
-    id: "4",
-    queueId: "q4",
-    queueName: "Health Center",
-    location: "Medical Building - 1st Floor",
-    tokenNumber: "H091",
-    joinedAt: "2024-01-12T09:00:00Z",
-    servedAt: "2024-01-12T09:25:00Z",
-    status: "served",
-    waitTime: 25,
-    serviceTime: 12,
-  },
-];
 
 export default function HistoryPage() {
   const [historyData, setHistoryData] = useState<QueueHistoryItem[]>([]);
@@ -91,11 +39,10 @@ export default function HistoryPage() {
     try {
       setLoading(true);
       setError(null);
-
+  
       const response = await apiService.get("/user-status/history", true);
-      console.log("history:", response);
-
-      setHistoryData(mockHistoryData);
+  
+      setHistoryData(response.data);
     } catch (err) {
       console.error("Error fetching queue history:", err);
       setError("Failed to load queue history. Please try again.");
@@ -191,7 +138,7 @@ export default function HistoryPage() {
           <div className="divide-y divide-gray-200">
             {historyData.map((item) => (
               <div
-                key={item.id}
+                key={`${item.queueId}-${item.token}-${item.joinedAt}`}
                 className="p-6 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-start justify-between">
@@ -217,7 +164,7 @@ export default function HistoryPage() {
                           Token:
                         </span>
                         <span className="bg-gray-100 px-2 py-1 rounded font-mono">
-                          {item.tokenNumber}
+                          {item.token}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -242,18 +189,8 @@ export default function HistoryPage() {
                   <div className="text-right ml-6">
                     <div className="text-sm text-gray-600 mb-1">Wait Time</div>
                     <div className="text-2xl font-bold text-blue-600">
-                      {item.waitTime}m
+                      {item.waitTimeMinutes}m
                     </div>
-                    {item.serviceTime && (
-                      <>
-                        <div className="text-sm text-gray-600 mb-1 mt-2">
-                          Service Time
-                        </div>
-                        <div className="text-lg font-semibold text-green-600">
-                          {item.serviceTime}m
-                        </div>
-                      </>
-                    )}
                   </div>
                 </div>
               </div>
