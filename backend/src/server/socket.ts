@@ -216,7 +216,9 @@ export async function broadcastQueueUpdate(queueId: string): Promise<void> {
 
     io.to(roomName).emit("updateQueue", snapshot);
   } catch (error) {
-    console.log(`Error broadcasting queue update for queue ${queueId}`, error);
+    console.error(`Error broadcasting queue update for queue ${queueId}:`, error);
+    // Don't throw - broadcast failures shouldn't break the main flow
+    // But log the error for monitoring/debugging
   }
 }
 
@@ -245,15 +247,24 @@ async function getQueueSnapshot(queueId: string): Promise<QueueSnapshot> {
     throw new Error("Queue not found");
   }
 
-  const tokens = await Token.find({ queue: queueId }).sort({ seq: 1 }).lean();
+  // Only fetch active tokens (WAITING and SERVED) for efficiency
+  // This significantly reduces data transfer and improves performance
+  const activeTokens = await Token.find({
+    queue: queueId,
+    status: { $in: [TokenStatus.WAITING, TokenStatus.SERVED] },
+  })
+    .sort({ seq: 1 })
+    .lean();
 
+  // Calculate stats efficiently
   const stats = {
-    totalWaiting: tokens.filter((t) => t.status === TokenStatus.WAITING).length,
-    totalActive: tokens.filter((t) => t.status === TokenStatus.SERVED).length,
-    totalCompleted: tokens.filter(
-      (t) =>
-        t.status === TokenStatus.SERVED || t.status === TokenStatus.SKIPPED,
-    ).length,
+    totalWaiting: activeTokens.filter((t) => t.status === TokenStatus.WAITING).length,
+    totalActive: activeTokens.filter((t) => t.status === TokenStatus.SERVED).length,
+    // Count completed tokens separately (only count, don't fetch all)
+    totalCompleted: await Token.countDocuments({
+      queue: queueId,
+      status: TokenStatus.COMPLETED,
+    }),
   };
 
   return {
@@ -265,7 +276,7 @@ async function getQueueSnapshot(queueId: string): Promise<QueueSnapshot> {
       nextSequence: queue.nextSequence,
     },
     queueId,
-    tokens: tokens.map((t) => ({
+    tokens: activeTokens.map((t) => ({
       id: t._id.toString(),
       seq: t.seq,
       status: t.status,

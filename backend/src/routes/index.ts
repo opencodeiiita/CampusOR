@@ -21,7 +21,6 @@ router.use("/notifications", notificationRouter);
 router.use("/queue-data", fetchQueueDataRouter);
 router.use("/user-status",
   verifyJWT,
-  authorize("user", "operator", "admin"),
   userStatusRouter
 );
 

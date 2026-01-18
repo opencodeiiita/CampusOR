@@ -37,10 +37,15 @@ export const checkInQueue = async (req: AuthRequest, res: Response) => {
       queueId,
     });
 
+    // Broadcast the queue update
+    await broadcastQueueUpdate(queueId);
+
     return res.status(200).json({
       success: true,
       message: result.message,
       currentQueue: result.currentQueue,
+      tokenId: result.tokenId,
+      tokenNumber: result.tokenNumber,
     });
   } catch (err: any) {
     return res.status(err.statusCode || 500).json({
@@ -62,6 +67,11 @@ export const updateCheckInStatus = async (req: AuthRequest, res: Response) => {
     }
 
     const result = await updateCheckInStatusService({ userId });
+
+    // Broadcast the queue update
+    if (result.completedQueue) {
+      await broadcastQueueUpdate(result.completedQueue.toString());
+    }
 
     return res.status(200).json({
       success: true,

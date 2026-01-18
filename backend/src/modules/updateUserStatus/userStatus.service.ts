@@ -91,6 +91,18 @@ export const checkInQueue = async ({ userId, queueId }: CheckInQueueInput) => {
     };
   }
 
+  // Generate token with userId
+  const token = await Token.create({
+    queue: queue._id,
+    userId: new Types.ObjectId(userId),
+    seq: queue.nextSequence,
+    status: TokenStatus.WAITING,
+  });
+
+  // Increment queue sequence
+  queue.nextSequence += 1;
+  await queue.save();
+
   // Update cache
   user.currentQueue = queue._id;
   await user.save();
@@ -105,6 +117,8 @@ export const checkInQueue = async ({ userId, queueId }: CheckInQueueInput) => {
   return {
     message: "Successfully joined the queue",
     currentQueue: queueId,
+    tokenId: token._id.toString(),
+    tokenNumber: `T-${String(token.seq).padStart(3, "0")}`,
   };
 };
 
@@ -128,10 +142,22 @@ export const updateCheckInStatus = async ({
 
   const completedQueue = activeToken.queue;
 
+  // Update token status to COMPLETED
+  if (activeToken.status === TokenStatus.SERVED) {
+    activeToken.status = TokenStatus.COMPLETED;
+    await activeToken.save();
+  } else if (activeToken.status === TokenStatus.WAITING) {
+    // If still waiting, can't complete - token should be served first
+    throw {
+      statusCode: 409,
+      message: "Cannot complete queue while still waiting. Token must be served first.",
+    };
+  }
+
   // Get queue info before clearing it (for email)
   const queue = await Queue.findById(completedQueue);
 
-  // Clear cache (Token status should be updated separately if needed)
+  // Clear cache
   user.currentQueue = undefined;
   await user.save();
 

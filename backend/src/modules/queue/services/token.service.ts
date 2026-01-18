@@ -1,4 +1,5 @@
 import { Queue, Token, TokenStatus } from "../queue.model.js";
+import { Types } from "mongoose";
 
 export interface TokenResponse {
   success: boolean;
@@ -14,8 +15,16 @@ export interface TokenResponse {
 
 export class TokenService {
   // generate token for a user in a queue
-  static async generateToken(queueId: string): Promise<TokenResponse> {
+  // Note: userId is required by Token schema, so this method requires it
+  static async generateToken(queueId: string, userId?: string): Promise<TokenResponse> {
     try {
+      if (!userId) {
+        return {
+          success: false,
+          error: "UserId is required to generate a token",
+        };
+      }
+
       const queue = await Queue.findOneAndUpdate(
         { _id: queueId, isActive: true },
         { $inc: { nextSequence: 1 } },
@@ -31,8 +40,10 @@ export class TokenService {
 
       const seq = queue.nextSequence;
 
+      // Create token with userId (required by schema)
       const token = await Token.create({
         queue: queue._id,
+        userId: new Types.ObjectId(userId),
         seq,
         status: TokenStatus.WAITING,
       });
