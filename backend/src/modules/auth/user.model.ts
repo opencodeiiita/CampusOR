@@ -15,8 +15,6 @@ export interface IUser extends Document {
 
   // Queue-related fields
   currentQueue?: Types.ObjectId; // Reference to queue if user is in queue
-  isInQueue?: boolean; // Flag to indicate if user is currently in queue
-  pastQueues?: Types.ObjectId[]; // Reference to queues if user has been in queue
 
   createdAt: Date;
   updatedAt: Date;
@@ -66,14 +64,6 @@ const userSchema = new Schema<IUser>(
       ref: "Queue",
       required: false,
     },
-    isInQueue: {
-      type: Boolean,
-      default: false,
-    },
-    pastQueues: [{
-      type: Schema.Types.ObjectId,
-      ref: "Queue",
-    }],
   },
   {
     timestamps: true,

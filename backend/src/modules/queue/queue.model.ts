@@ -65,6 +65,7 @@ export enum TokenStatus {
 
 export interface IToken extends Document {
   queue: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   seq: number;
   status: TokenStatus;
   createdAt: Date;
@@ -76,6 +77,12 @@ const tokenSchema = new Schema<IToken>(
       // which queue this token belongs to
       type: Schema.Types.ObjectId,
       ref: "Queue",
+      required: true,
+    },
+    userId: {
+      // which queue this token belongs to
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     seq: {
@@ -94,6 +101,12 @@ const tokenSchema = new Schema<IToken>(
 );
 tokenSchema.index({ queue: 1, seq: 1 }, { unique: true });
 tokenSchema.index({ queue: 1, status: 1 });
+tokenSchema.index({ userId: 1 }, {
+  unique: true,
+  partialFilterExpression: {
+    status: TokenStatus.WAITING,
+  }
+});
 
 export const Token = mongoose.model<IToken>("Token", tokenSchema);
 export const Queue = mongoose.model<IQueue>("Queue", queueSchema);
