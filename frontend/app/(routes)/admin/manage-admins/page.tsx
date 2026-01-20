@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminSidebar from "@/components/sidebar/AdminSidebar";
 import ProtectedRoute from "../../../components/ProtectedRoute";
+import { error } from "console";
+import { useAuth } from "@/app/context/AuthContext";
 
 type AdminUser = {
   id: string;
@@ -12,27 +14,51 @@ type AdminUser = {
   createdAt: string;
 };
 
-const MOCK_ADMINS: AdminUser[] = [
-  {
-    id: "1",
-    email: "admin@college.edu",
-    emailVerified: true,
-    createdBy: null,
-    createdAt: "2025-01-01",
-  },
-  {
-    id: "2",
-    email: "ops@college.edu",
-    emailVerified: false,
-    createdBy: "admin@college.edu",
-    createdAt: "2025-01-12",
-  },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function ManageAdminsPage() {
-  const [admins] = useState<AdminUser[]>(MOCK_ADMINS);
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
+
+  const fetchAdmins = async () => {
+    const response = await fetch(`${API_URL}/api/admin/admins`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    console.log("admin data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.message || "fetching admin failed");
+    }
+
+    const normalizedAdmins: AdminUser[] = data.map((admin: any) => ({
+      id: admin._id,
+      email: admin.email,
+      emailVerified: admin.emailVerified,
+      createdBy: admin.createdByAdmin ?? null,
+      createdAt: admin.createdAt.split("T")[0],
+    }));
+  
+    setAdmins(normalizedAdmins);  
+  }
+
+  useEffect(() => {
+    try {
+      fetchAdmins();
+      console.log("Sucessfully fetched admins");
+    }
+    catch (err) {
+      console.error("Error fetching admins:", err);
+    }
+  }, []);
 
   const handleCreateAdmin = async () => {
     if (!email) return;
