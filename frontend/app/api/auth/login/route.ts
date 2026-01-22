@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
+
+    const response = await fetch(`${API_URL}/api/auth/login`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -23,16 +23,16 @@ export async function POST(request: NextRequest) {
           code: data.code,
           requiresVerification: data.requiresVerification,
         },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Login API error:', error);
+    console.error("Login API error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

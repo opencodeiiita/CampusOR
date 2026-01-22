@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const response = await fetch(`${API_URL}/auth/resend-otp`, {
+    const response = await fetch(`${API_URL}/api/auth/resend-otp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
           message: data.message || "Failed to resend OTP",
           code: data.code,
         },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     console.error("Resend OTP API error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

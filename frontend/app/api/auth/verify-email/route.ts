@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const response = await fetch(`${API_URL}/auth/verify-email`, {
+    const response = await fetch(`${API_URL}/api/auth/verify-email`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
           code: data.code,
           requiresVerification: data.requiresVerification,
         },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     console.error("Verify email API error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
