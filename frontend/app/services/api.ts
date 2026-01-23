@@ -43,7 +43,7 @@ class ApiService {
     }
   }
 
-  async post(endpoint: string, data: any, includeAuth: boolean = false) {
+  async post(endpoint: string, data: unknown, includeAuth: boolean = false) {
     const response = await fetch(this.buildUrl(endpoint), {
       method: "POST",
       headers: includeAuth
@@ -88,7 +88,7 @@ class ApiService {
     return response.json();
   }
 
-  async put(endpoint: string, data: any, includeAuth: boolean = true) {
+  async put(endpoint: string, data: unknown, includeAuth: boolean = true) {
     const response = await fetch(this.buildUrl(endpoint), {
       method: "PUT",
       headers: includeAuth
@@ -111,7 +111,7 @@ class ApiService {
     return response.json();
   }
 
-  async patch(endpoint: string, data: any, includeAuth: boolean = true) {
+  async patch(endpoint: string, data: unknown, includeAuth: boolean = true) {
     const response = await fetch(this.buildUrl(endpoint), {
       method: "PATCH",
       headers: includeAuth

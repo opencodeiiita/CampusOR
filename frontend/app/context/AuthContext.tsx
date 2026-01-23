@@ -75,43 +75,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Register the unauthorized callback to trigger logout on 401/403
     apiService.setUnauthorizedCallback(logout);
 
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedUser = localStorage.getItem(USER_KEY);
+    const timer = setTimeout(() => {
+      const storedToken = localStorage.getItem(TOKEN_KEY);
+      const storedUser = localStorage.getItem(USER_KEY);
 
-    if (storedToken) {
-      if (!isTokenValid(storedToken)) {
-        console.warn("Stored token is expired or invalid. Logging out.");
-        logout();
-        setIsLoading(false);
-        return;
-      }
-
-      setToken(storedToken);
-
-      if (storedUser) {
-        try {
-          const parsed = JSON.parse(storedUser) as AuthUser;
-          setUser({
-            ...parsed,
-            emailVerified: parsed.emailVerified ?? true,
-          });
-        } catch {
-          // ignore bad stored value
+      if (storedToken) {
+        if (!isTokenValid(storedToken)) {
+          console.warn("Stored token is expired or invalid. Logging out.");
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          setIsLoading(false);
+          return;
         }
-      } else {
-        const decoded = decodeToken(storedToken);
-        if (decoded?.role && decoded.id) {
-          setUser({
-            id: decoded.id,
-            name: "",
-            email: "",
-            role: decoded.role,
-            emailVerified: true,
-          });
+
+        setToken(storedToken);
+
+        if (storedUser) {
+          try {
+            const parsed = JSON.parse(storedUser) as AuthUser;
+            setUser({
+              ...parsed,
+              emailVerified: parsed.emailVerified ?? true,
+            });
+          } catch {
+            // ignore bad stored value
+          }
+        } else {
+          const decoded = decodeToken(storedToken);
+          if (decoded?.role && decoded.id) {
+            setUser({
+              id: decoded.id,
+              name: "",
+              email: "",
+              role: decoded.role,
+              emailVerified: true,
+            });
+          }
         }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [logout]);
 
   const login = React.useCallback((jwt: string, authUser?: AuthUser | null) => {
