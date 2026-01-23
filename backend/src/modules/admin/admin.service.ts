@@ -1,5 +1,10 @@
 import { Queue } from "../queue/queue.model.js";
 import { Token, TokenStatus } from "../queue/token.model.js";
+import { AdminInvite } from "./admin-invite.model.js";
+import { User } from "../auth/user.model.js";
+import crypto from "crypto";
+import { sendAdminInviteEmail } from "../notifications/email.service.js";
+import { AuthError } from "../auth/auth.service.js";
 
 /**
  * Admin Analytics Service
@@ -310,3 +315,39 @@ export const getTokenStatusDistribution =
 
     return result;
   };
+
+/**
+ * Create Admin Invite
+ */
+export const createInvite = async (
+  email: string,
+  inviterId: string,
+  inviterName: string
+): Promise<{ message: string }> => {
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new AuthError("User with this email already exists", 400);
+  }
+
+  // Generate Token
+  const token = crypto.randomBytes(32).toString("hex");
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+  // Create Invite Record
+  await AdminInvite.create({
+    email,
+    token: hashedToken,
+    expiresAt,
+    createdBy: inviterId,
+  });
+
+  // Send Email
+  const inviteLink = `${process.env.FRONTEND_URL}/admin/accept-invite?token=${token}&email=${email}`; 
+
+  await sendAdminInviteEmail(email, inviteLink, inviterName);
+
+  return { message: "Invitation sent successfully" };
+};

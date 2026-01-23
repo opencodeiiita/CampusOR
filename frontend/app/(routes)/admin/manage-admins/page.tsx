@@ -52,24 +52,47 @@ export default function ManageAdminsPage() {
 
   useEffect(() => {
     try {
-      fetchAdmins();
       console.log("Sucessfully fetched admins");
     }
     catch (err) {
       console.error("Error fetching admins:", err);
     }
-  }, []);
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetchAdmins();
+    }
+  }, [token]);
 
   const handleCreateAdmin = async () => {
     if (!email) return;
     setLoading(true);
 
-    // TODO: integrate POST /admin/users
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/invite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to send invite");
+      }
+
+      alert("Admin invitation sent successfully!");
       setEmail("");
-      alert("Admin invitation sent (mock)");
-    }, 800);
+    } catch (err: any) {
+      console.error("Invite error:", err);
+      alert(err.message || "Failed to send invitation");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

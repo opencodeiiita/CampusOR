@@ -2,6 +2,7 @@ import { Response } from "express";
 import { AuthRequest } from "../../middlewares/auth.js";
 import * as adminService from "./admin.service.js";
 import { User } from "../auth/user.model.js";
+import { AuthError } from "../auth/auth.service.js";
 
 /**
  * Admin Controllers
@@ -134,6 +135,38 @@ export const getTokenStatusAnalytics = async (
     return res.status(500).json({
       message: "Failed to fetch token status data",
       error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
+/**
+ * Send Admin Invite
+ */
+export const sendAdminInvite = async (req: AuthRequest, res: Response) => {
+  try {
+    const { email } = req.body;
+    const inviterId = req.user?.sub;
+    
+    if (!inviterId) {
+       return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const inviter = await User.findById(inviterId);
+    if (!inviter) {
+       return res.status(401).json({ message: "Inviter not found" });
+    }
+
+    const result = await adminService.createInvite(email, inviterId, inviter.name);
+    
+    return res.status(200).json(result);
+  } catch (error: any) {
+    const status = error instanceof AuthError ? error.status : 400;
+    return res.status(status).json({
+      message: error.message || "Failed to send invite",
     });
   }
 };

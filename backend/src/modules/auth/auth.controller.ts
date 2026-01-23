@@ -5,6 +5,7 @@ import {
   createAdminUser,
   verifyEmailOtp,
   resendEmailOtp,
+  acceptAdminInvite,
   AuthError,
 } from "./auth.service.js";
 import { AuthRequest } from "../../middlewares/auth.js";
@@ -181,6 +182,34 @@ export const createAdmin = async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({
       message: error.message || "Admin creation failed",
+    });
+  }
+};
+
+export const acceptInvite = async (req: Request, res: Response) => {
+  try {
+    const { token, email, name, password } = req.body;
+
+    if (!token || !email || !name || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "token, email, name and password are required",
+      });
+    }
+
+    const result = await acceptAdminInvite({ email, token, name, password });
+
+    return res.status(200).json({
+      success: true,
+      message: "Admin account setup successful",
+      ...result,
+    });
+  } catch (error: any) {
+    const status = error instanceof AuthError ? error.status : 400;
+    return res.status(status).json({
+      success: false,
+      message: error.message || "Failed to accept invite",
+      code: error instanceof AuthError ? error.code : undefined,
     });
   }
 };

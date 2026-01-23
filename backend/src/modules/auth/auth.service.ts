@@ -1,4 +1,5 @@
 import { User, UserRole, IUser } from "./user.model.js";
+import { AdminInvite } from "../admin/admin-invite.model.js";
 import bcrypt from "bcryptjs"; // for encrypting and matching the password
 import jwt, { SignOptions } from "jsonwebtoken";
 import { env } from "../../config/env.js";
@@ -350,4 +351,68 @@ export const createAdminUser = async (
     success: true,
     message: "Admin invitation sent"
   };
+};
+
+///-------------------------ACCEPT ADMIN INVITE SERVICE---------------------------------------------
+
+export interface AcceptAdminInviteDetails {
+  email: string;
+  token: string;
+  name: string;
+  password: string;
+}
+
+export const acceptAdminInvite = async (
+  input: AcceptAdminInviteDetails
+): Promise<LoginResult> => {
+  const { email, token, name, password } = input;
+
+  // Find the invite
+  const crypto = await import("crypto");
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const invite = await AdminInvite.findOne({
+    email,
+    token: hashedToken,
+    isUsed: false,
+  });
+
+  if (!invite) {
+    throw new AuthError("Invalid or used invitation link", 400);
+  }
+
+  // Check expiry
+  if (invite.expiresAt < new Date()) {
+    throw new AuthError("Invitation expired", 400);
+  }
+
+  // Create User
+  const existing = await User.findOne({ email });
+  if (existing) {
+     // For simplicity and security, invite flow usually creates the account.
+     throw new AuthError("User already exists", 400);
+  }
+
+  const hashedPassword = await bcrypt.hash(password, SALT);
+
+  const userData = {
+    name,
+    email,
+    password: hashedPassword,
+    role: "admin" as UserRole,
+    emailVerified: true, // Trusted via email link
+    createdByAdmin: invite.createdBy,
+  };
+
+  const userResult = await User.create(userData);
+  const user = Array.isArray(userResult) ? userResult[0] : userResult;
+  
+  // Mark invite as used
+  invite.isUsed = true;
+  await invite.save();
+
+  const safeUser = buildSafeUser(user);
+  const jwtToken = signToken(safeUser);
+
+  return { token: jwtToken, user: safeUser };
 };

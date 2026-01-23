@@ -1,5 +1,5 @@
 import { getRedisClient, isRedisReady } from "../../../config/redis.js";
-import { Token, TokenStatus } from "../queue.model.js";
+import { Token, TokenStatus } from "../token.model.js";
 
 const tokensKey = (queueId: string) => `queue:${queueId}:tokens`;
 const nowServingKey = (queueId: string) => `queue:${queueId}:nowServing`;

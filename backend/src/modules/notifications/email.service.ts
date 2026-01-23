@@ -11,6 +11,7 @@ import {
   getEmailVerificationHtml,
   getEmailVerificationText,
 } from "./email-template-verification.js";
+import { getAdminInviteEmailTemplate } from "./email-template-admin-invite.js";
 
 // Initialize Resend with API key from environment
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -184,5 +185,31 @@ export const sendEmailVerificationOtp = async (
     }
   } catch (error) {
     console.error("Error sending verification email:", error);
+  }
+};
+
+/**
+ * Send admin invite email
+ */
+export const sendAdminInviteEmail = async (
+  email: string,
+  inviteLink: string,
+  inviterName: string
+): Promise<void> => {
+  try {
+    const html = getAdminInviteEmailTemplate(inviteLink, inviterName);
+
+    const result = await sendEmail({
+      to: email,
+      subject: "You have been invited to join CampusOR as Admin",
+      html,
+      text: `You have been invited by ${inviterName} to join CampusOR as an Administrator. Please follow this link to accept: ${inviteLink}`,
+    });
+
+    if (!result.success) {
+      console.error("Failed to send admin invite email:", result.error);
+    }
+  } catch (error) {
+    console.error("Error sending admin invite email:", error);
   }
 };

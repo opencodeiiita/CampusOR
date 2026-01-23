@@ -8,6 +8,7 @@ import {
   getTokensServedAnalytics,
   getAvgWaitTimeAnalytics,
   getTokenStatusAnalytics,
+  sendAdminInvite,
 } from "./admin.controller.js";
 
 const router = Router();
@@ -19,6 +20,7 @@ const router = Router();
 router.get("/dashboard", verifyJWT, authorize("admin"), getDashboard);
 
 router.get("/admins", verifyJWT, authorize("admin"), getAdmins);
+router.post("/invite", verifyJWT, authorize("admin"), sendAdminInvite);
 
 // Dashboard Summary - Overview metrics
 router.get(
