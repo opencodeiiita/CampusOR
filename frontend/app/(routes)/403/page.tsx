@@ -1,8 +1,13 @@
 "use client";
 
+import { toastBus } from "@/app/utils/toastBus";
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function ForbiddenPage() {
+  useEffect(() => {
+    toastBus.error("Role access denied");
+  }, []);
   return (
     <main className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="max-w-lg w-full bg-white border border-slate-200 shadow-lg rounded-2xl p-8 text-center">

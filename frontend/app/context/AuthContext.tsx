@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { apiService } from "../services/api";
+import { toastBus } from "../utils/toastBus";
 
 export type UserRole = "user" | "operator" | "admin";
 
@@ -69,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(USER_KEY);
     setToken(null);
     setUser(null);
+    toastBus.info("Logged out successfully");
   }, []);
 
   useEffect(() => {
@@ -82,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (storedToken) {
         if (!isTokenValid(storedToken)) {
           console.warn("Stored token is expired or invalid. Logging out.");
+          toastBus.error("Session expired. Please login again.");
           localStorage.removeItem(TOKEN_KEY);
           localStorage.removeItem(USER_KEY);
           setIsLoading(false);

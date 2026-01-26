@@ -1,3 +1,5 @@
+import { toastBus } from "../utils/toastBus";
+
 class ApiService {
   private baseUrl: string;
   private apiBaseUrl: string;
@@ -38,12 +40,34 @@ class ApiService {
   }
 
   private handleUnauthorized() {
-    if (this.unauthorizedCallback) {
-      this.unauthorizedCallback();
-    }
+    toastBus.error("Session expired. Please login again.");
+    this.unauthorizedCallback?.();
   }
 
-  async post(endpoint: string, data: unknown, includeAuth: boolean = false) {
+  private async handleResponse(response: Response) {
+    const data = await response.json().catch(() => ({}));
+
+    if (response.status === 401 || response.status === 403) {
+      this.handleUnauthorized();
+    }
+
+    if (!response.ok) {
+      toastBus.error(data?.message || "Request failed");
+      throw new Error(data?.message || "Request failed");
+    }
+
+    if (data?.success === true && data?.message) {
+      toastBus.success(data.message);
+    }
+
+    if (data?.success === false && data?.message) {
+      toastBus.error(data.message);
+    }
+
+    return data;
+  }
+
+  async post(endpoint: string, data: unknown, includeAuth = false) {
     const response = await fetch(this.buildUrl(endpoint), {
       method: "POST",
       headers: includeAuth
@@ -52,21 +76,10 @@ class ApiService {
       body: JSON.stringify(data),
     });
 
-    if (response.status === 401 || response.status === 403) {
-      this.handleUnauthorized();
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`,
-      );
-    }
-
-    return response.json();
+    return this.handleResponse(response);
   }
 
-  async get(endpoint: string, includeAuth: boolean = true) {
+  async get(endpoint: string, includeAuth = true) {
     const response = await fetch(this.buildUrl(endpoint), {
       method: "GET",
       headers: includeAuth
@@ -74,21 +87,10 @@ class ApiService {
         : { "Content-Type": "application/json" },
     });
 
-    if (response.status === 401 || response.status === 403) {
-      this.handleUnauthorized();
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`,
-      );
-    }
-
-    return response.json();
+    return this.handleResponse(response);
   }
 
-  async put(endpoint: string, data: unknown, includeAuth: boolean = true) {
+  async put(endpoint: string, data: unknown, includeAuth = true) {
     const response = await fetch(this.buildUrl(endpoint), {
       method: "PUT",
       headers: includeAuth
@@ -97,21 +99,10 @@ class ApiService {
       body: JSON.stringify(data),
     });
 
-    if (response.status === 401 || response.status === 403) {
-      this.handleUnauthorized();
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`,
-      );
-    }
-
-    return response.json();
+    return this.handleResponse(response);
   }
 
-  async patch(endpoint: string, data: unknown, includeAuth: boolean = true) {
+  async patch(endpoint: string, data: unknown, includeAuth = true) {
     const response = await fetch(this.buildUrl(endpoint), {
       method: "PATCH",
       headers: includeAuth
@@ -120,29 +111,10 @@ class ApiService {
       body: JSON.stringify(data),
     });
 
-    if (response.status === 401 || response.status === 403) {
-      this.handleUnauthorized();
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`,
-      );
-    }
-
-    // Handle possible empty or non-JSON responses gracefully
-    if (response.status === 204) {
-      return null;
-    }
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.toLowerCase().includes("application/json")) {
-      return null;
-    }
-    return response.json().catch(() => null);
+    return this.handleResponse(response);
   }
 
-  async delete(endpoint: string, includeAuth: boolean = true) {
+  async delete(endpoint: string, includeAuth = true) {
     const response = await fetch(this.buildUrl(endpoint), {
       method: "DELETE",
       headers: includeAuth
@@ -150,18 +122,7 @@ class ApiService {
         : { "Content-Type": "application/json" },
     });
 
-    if (response.status === 401 || response.status === 403) {
-      this.handleUnauthorized();
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`,
-      );
-    }
-
-    return response.json();
+    return this.handleResponse(response);
   }
 }
 

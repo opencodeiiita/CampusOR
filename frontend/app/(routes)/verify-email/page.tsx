@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import Footer from "../../../components/footer/Footer";
+import { apiService } from "../../services/api";
 
 const OTP_INPUT_LENGTH = 6;
 
@@ -67,20 +68,7 @@ export default function VerifyEmailPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/auth/verify-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, otp }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Verification failed");
-      }
-
+      const data = await apiService.post("/auth/verify-email", { email, otp }, false);
       login(data.token, data.user);
       router.replace(destinationRoute(data.user?.role));
     } catch (err: any) {
@@ -101,20 +89,7 @@ export default function VerifyEmailPage() {
 
     setIsResending(true);
     try {
-      const response = await fetch("/api/auth/resend-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to resend OTP");
-      }
-
+      const data = await apiService.post("/auth/resend-otp", { email }, false);
       setInfo(data.message || "A fresh code is on its way.");
       setCooldown(60);
     } catch (err: any) {

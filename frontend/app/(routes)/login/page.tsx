@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import Footer from "../../../components/footer/Footer";
+import { apiService } from "@/app/services/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -23,22 +24,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 403 && data?.requiresVerification) {
-          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
-        }
-        throw new Error(data.message || "Login failed");
-      }
+      const data = await apiService.post("/auth/login", { email, password }, false);
 
       login(data.token, data.user);
 
