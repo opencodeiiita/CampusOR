@@ -6,7 +6,37 @@ import { AuthRequest } from "../../middlewares/auth.js";
 import { ensureQueueAccess } from "../operator/operator.utils.js";
 import { broadcastQueueUpdate } from "../../server/socket.js";
 
+import { getQueuePredictedWait } from "./services/predictedWait.service.js";
+
 // 1: Create a new queue
+// 6: Get predicted wait time for a queue (ML-powered)
+export async function getPredictedWaitTime(req: AuthRequest, res: Response) {
+  try {
+    const { queueId } = req.params;
+    const predictedWaitMinutes = await getQueuePredictedWait(queueId);
+    if (predictedWaitMinutes === null || predictedWaitMinutes === undefined) {
+      return res.status(200).json({
+        queueId,
+        predictedWaitMinutes: null,
+        success: false,
+        error: "Prediction unavailable",
+      });
+    }
+    return res.status(200).json({
+      queueId,
+      predictedWaitMinutes: Math.round(predictedWaitMinutes),
+      success: true,
+    });
+  } catch (error) {
+    console.error("Predicted Wait Error:", error);
+    return res.status(500).json({
+      queueId: req.params.queueId,
+      predictedWaitMinutes: null,
+      success: false,
+      error: "Failed to get predicted wait time",
+    });
+  }
+}
 export async function createQueue(req: AuthRequest, res: Response) {
   try {
     const { name, location, operator } = req.body;
@@ -63,7 +93,9 @@ export async function createQueue(req: AuthRequest, res: Response) {
 export async function generateToken(req: AuthRequest, res: Response) {
   const { queueId } = req.params;
   const userId = req.user?.sub; // Get userId from auth if available
-  console.log(`[Token] Request to generate token for queue: ${queueId}${userId ? ` for user: ${userId}` : ''}`);
+  console.log(
+    `[Token] Request to generate token for queue: ${queueId}${userId ? ` for user: ${userId}` : ""}`,
+  );
 
   // We rely on the service to handle the logic, but we could add
   // checks here if the queue is active before calling service
@@ -116,7 +148,9 @@ export async function getQueueOperatorView(req: AuthRequest, res: Response) {
 
     const { queue, error } = await ensureQueueAccess(queueId, req.user);
     if (error) {
-      return res.status(error.status).json({ success: false, error: error.message });
+      return res
+        .status(error.status)
+        .json({ success: false, error: error.message });
     }
     if (!queue) {
       return res.status(404).json({ success: false, error: "Queue not found" });
@@ -167,7 +201,7 @@ export async function getQueueOperatorView(req: AuthRequest, res: Response) {
 export async function getQueuesForUsers(req: AuthRequest, res: Response) {
   try {
     const queues = await Queue.find({}).select(
-      "name location isActive createdAt"
+      "name location isActive createdAt",
     );
 
     // Get queue stats for each queue
@@ -202,7 +236,7 @@ export async function getQueuesForUsers(req: AuthRequest, res: Response) {
           waitTime: estimatedWaitTime,
           status,
         };
-      })
+      }),
     );
 
     return res.status(200).json({

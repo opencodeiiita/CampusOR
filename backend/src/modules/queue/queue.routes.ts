@@ -1,14 +1,18 @@
 import { Router } from "express";
+
 import {
   createQueue,
   generateToken,
   updateTokenStatus,
   getQueueOperatorView,
   getQueuesForUsers,
+  getPredictedWaitTime,
 } from "./queue.controller.js";
 import { verifyJWT, authorize } from "../../middlewares/auth.js";
 
 const router = Router();
+// ML-powered predicted wait time endpoint
+router.get("/:queueId/predicted-wait", getPredictedWaitTime);
 
 // Public endpoint to get all queues for users
 router.get("/", getQueuesForUsers);
@@ -22,7 +26,7 @@ router.get(
   "/:queueId/operator-view",
   verifyJWT,
   authorize("operator", "admin"),
-  getQueueOperatorView
+  getQueueOperatorView,
 );
 
 // tokens
@@ -34,7 +38,7 @@ router.patch(
   "/tokens/:tokenId/status",
   verifyJWT,
   authorize("operator", "admin"),
-  updateTokenStatus
+  updateTokenStatus,
 );
 
 export default router;

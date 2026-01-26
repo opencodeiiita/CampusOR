@@ -42,12 +42,16 @@ export default function QueueCard({ queue }: QueueCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow relative">
       {/* Left accent line */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccentColor(queue.status)}`} />
+      <div
+        className={`absolute left-0 top-0 bottom-0 w-1 ${getAccentColor(queue.status)}`}
+      />
 
       <div className="p-5 pl-6">
         {/* Header with Status indicator */}
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-bold text-[#1E293B] leading-tight">{queue.queueName}</h3>
+          <h3 className="text-xl font-bold text-[#1E293B] leading-tight">
+            {queue.queueName}
+          </h3>
           {isLive ? (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50">
               <div className="w-2 h-2 rounded-full bg-[#16A34A]"></div>
@@ -79,15 +83,21 @@ export default function QueueCard({ queue }: QueueCardProps) {
         <div className="border-dashed border border-gray-200 rounded-lg p-4 mb-4 bg-[#F8FAFC]">
           <div className="flex justify-between items-baseline">
             <span className="text-xs text-[#94A3B8] uppercase tracking-wider font-normal">
-            Queue Length
+              Queue Length
             </span>
-            <span className="font-normal text-gray-700">{queue.queueLength} people</span>
+            <span className="font-normal text-gray-700">
+              {queue.queueLength} people
+            </span>
           </div>
           <div className="flex justify-between items-baseline">
             <span className="text-xs text-[#94A3B8] uppercase tracking-wider font-normal">
               Estimated Wait
             </span>
-            <span className="text-2xl font-bold text-[#2563EB]">~ {queue.waitTime} mins</span>
+            <span className="text-2xl font-bold text-[#2563EB]">
+              {queue.waitTime === null || queue.waitTime === undefined
+                ? "—"
+                : `~ ${queue.waitTime} mins`}
+            </span>
           </div>
         </div>
 
@@ -118,4 +128,3 @@ export default function QueueCard({ queue }: QueueCardProps) {
     </div>
   );
 }
-
