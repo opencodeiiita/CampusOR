@@ -322,6 +322,20 @@ export default function OperatorLiveQueuesPage() {
   const serveNext = () => callAction("serve-next", "POST");
   const skipToken = () => callAction("skip", "POST");
   const recallToken = () => callAction("recall", "POST");
+  const extendToken = () => {
+    if (!nowServing) return;
+    apiService.extendToken(nowServing.id, 2).then(() => {
+      toast.success("Extended by 2 minutes");
+      loadSelectedQueue();
+    }).catch(e => toast.error(e.message));
+  };
+  const markNoShow = () => {
+    if (!nowServing) return;
+    apiService.markNoShow(nowServing.id).then(() => {
+      toast.success("Marked as No-Show");
+      loadSelectedQueue();
+    }).catch(e => toast.error(e.message));
+  };
   const toggleQueueStatus = () =>
     queue?.status === "ACTIVE"
       ? callAction("pause", "PATCH")
@@ -410,11 +424,10 @@ export default function OperatorLiveQueuesPage() {
                   <button
                     key={queueItem.id}
                     onClick={() => setSelectedQueueId(queueItem.id)}
-                    className={`min-w-[220px] text-left bg-white border rounded-2xl p-4 shadow-sm transition-all ${
-                      isSelected
-                        ? "border-sky-500 ring-2 ring-sky-200"
-                        : "border-slate-200 hover:shadow-md"
-                    }`}
+                    className={`min-w-[220px] text-left bg-white border rounded-2xl p-4 shadow-sm transition-all ${isSelected
+                      ? "border-sky-500 ring-2 ring-sky-200"
+                      : "border-slate-200 hover:shadow-md"
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -523,6 +536,8 @@ export default function OperatorLiveQueuesPage() {
                     onServeNext={serveNext}
                     onSkip={skipToken}
                     onRecall={recallToken}
+                    onExtend={extendToken}
+                    onNoShow={markNoShow}
                     onToggleQueue={toggleQueueStatus}
                     queueStatus={queue.status}
                   />

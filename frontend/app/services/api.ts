@@ -127,6 +127,21 @@ class ApiService {
 
     return this.handleResponse(response);
   }
+  async extendToken(tokenId: string, minutes?: number) {
+    return this.post(`queues/tokens/${tokenId}/extend`, { minutes }, true);
+  }
+
+  async markNoShow(tokenId: string) {
+    return this.post(`queues/tokens/${tokenId}/no-show`, {}, true);
+  }
+
+  async recallToken(tokenId: string) {
+    return this.post(`queues/tokens/${tokenId}/recall`, {}, true);
+  }
+
+  async checkIn() {
+    return this.post("user-status/check-in", {}, true);
+  }
 }
 
 export const apiService = new ApiService();

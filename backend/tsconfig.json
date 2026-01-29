@@ -5,11 +5,18 @@
     "moduleResolution": "NodeNext",
     "rootDir": "src",
     "outDir": "dist",
-
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-
-    "types": ["node"]
-  }
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "scripts"
+  ]
 }

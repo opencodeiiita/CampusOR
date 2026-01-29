@@ -138,7 +138,19 @@ export async function updateTokenStatus(req: AuthRequest, res: Response) {
     });
   }
 
-  const result = await TokenService.updateStatus(tokenId, status);
+  // Calculate expiry if status is SERVED
+  let expiryDate: Date | undefined;
+  if (status === TokenStatus.SERVED) {
+    const token = await Token.findById(tokenId).populate("queue");
+    if (token && token.queue) {
+      // @ts-ignore - populated queue access
+      const expiryMinutes = token.queue.tokenExpiryMinutes || 5;
+      expiryDate = new Date(Date.now() + expiryMinutes * 60 * 1000);
+    }
+  }
+
+  // Pass expiryDate to service
+  const result = await TokenService.updateStatus(tokenId, status, expiryDate);
 
   if (!result.success) {
     return res.status(400).json(result);
@@ -263,5 +275,87 @@ export async function getQueuesForUsers(req: AuthRequest, res: Response) {
       success: false,
       error: "Failed to fetch queues",
     });
+  }
+}
+
+
+
+
+// 6: Operator Override Actions
+export async function extendTokenTime(req: AuthRequest, res: Response) {
+  try {
+    const { tokenId } = req.params;
+    const { minutes } = req.body;
+    const extendBy = minutes ? Number(minutes) : 2;
+
+    const token = await Token.findById(tokenId);
+    if (!token) return res.status(404).json({ error: "Token not found" });
+
+    if (token.status !== TokenStatus.SERVED || !token.expireAt) {
+      return res.status(400).json({ error: "Token is not currently serving or has no expiry" });
+    }
+
+    // Extend expiry
+    token.expireAt = new Date(token.expireAt.getTime() + extendBy * 60 * 1000);
+    await token.save();
+
+    await broadcastQueueUpdate(token.queue.toString());
+
+    return res.status(200).json({ success: true, token });
+  } catch (error) {
+    console.error("Extend Token Error:", error);
+    return res.status(500).json({ success: false, error: "Failed to extend time" });
+  }
+}
+
+export async function markTokenNoShow(req: AuthRequest, res: Response) {
+  try {
+    const { tokenId } = req.params;
+
+    const token = await Token.findById(tokenId);
+    if (!token) return res.status(404).json({ error: "Token not found" });
+
+    token.status = TokenStatus.EXPIRED; // Treat no-show as expired
+    token.expireAt = undefined;
+    await token.save();
+
+    // Update Redis
+    await broadcastQueueUpdate(token.queue.toString());
+
+    return res.status(200).json({ success: true, token });
+  } catch (error) {
+    console.error("Mark No-Show Error:", error);
+    return res.status(500).json({ success: false, error: "Failed to mark no-show" });
+  }
+}
+
+export async function recallToken(req: AuthRequest, res: Response) {
+  try {
+    const { tokenId } = req.params;
+
+    const token = await Token.findById(tokenId).populate("queue");
+    if (!token) return res.status(404).json({ error: "Token not found" });
+
+    // Only recall expired/skipped tokens
+    if (![TokenStatus.EXPIRED, TokenStatus.SKIPPED].includes(token.status as TokenStatus)) {
+      return res.status(400).json({ error: "Can only recall expired or skipped tokens" });
+    }
+
+    // Set back to SERVED
+    token.status = TokenStatus.SERVED;
+    // Set new expiry
+    // @ts-ignore
+    const expiryMinutes = token.queue.tokenExpiryMinutes || 5;
+    token.expireAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+
+    await token.save();
+
+    // Broadcast
+    await broadcastQueueUpdate(token.queue.toString());
+
+    return res.status(200).json({ success: true, token });
+  } catch (error) {
+    console.error("Recall Token Error:", error);
+    return res.status(500).json({ success: false, error: "Failed to recall token" });
   }
 }

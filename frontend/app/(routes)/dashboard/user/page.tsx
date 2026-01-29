@@ -26,6 +26,7 @@ interface CurrentQueue {
   estimatedWaitTime: number;
   joinedAt: string;
   status: string;
+  expireAt?: string;
 }
 
 export default function UserDashboardPage() {
@@ -41,21 +42,24 @@ export default function UserDashboardPage() {
 
     // Subscribe to WebSocket for real-time updates
     const unsubscribe = subscribeToQueue(currentQueue.queueId, {
-      onUpdate: (payload: any) => {
-        if (currentQueue) {
-          const myTokenSeq = parseInt(
-            currentQueue.tokenNumber.replace(/\D/g, "")
-          );
-          const waitingAhead = payload.tokens.filter(
-            (t: any) => t.status === "waiting" && t.seq < myTokenSeq
+      onUpdate: (payload: unknown) => {
+        setCurrentQueue((prev) => {
+          if (!prev) return null;
+
+          const data = payload as { tokens: Array<{ status: string; seq: number }> };
+          if (!data?.tokens) return prev;
+
+          const myTokenSeq = parseInt(prev.tokenNumber.replace(/\D/g, ""), 10);
+          const waitingAhead = data.tokens.filter(
+            (t) => t.status === "waiting" && t.seq < myTokenSeq
           ).length;
 
-          setCurrentQueue({
-            ...currentQueue,
+          return {
+            ...prev,
             currentPosition: waitingAhead + 1,
             estimatedWaitTime: (waitingAhead + 1) * 5,
-          });
-        }
+          };
+        });
       },
       onError: (err) => console.error("WebSocket error:", err),
     });
@@ -86,7 +90,7 @@ export default function UserDashboardPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Welcome back! Here's your queue status.</p>
+          <p className="text-gray-600">Welcome back! Here&apos;s your queue status.</p>
         </div>
         <CardSkeleton />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -103,7 +107,7 @@ export default function UserDashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's your queue status.</p>
+        <p className="text-gray-600">Welcome back! Here&apos;s your queue status.</p>
       </div>
 
       {currentQueue ? (
@@ -143,10 +147,14 @@ export default function UserDashboardPage() {
             </div>
             <div className="bg-white rounded-lg p-4 text-center shadow-sm">
               <Clock className="w-5 h-5 text-gray-400 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-orange-600">
-                {currentQueue.estimatedWaitTime}m
-              </div>
-              <div className="text-xs text-gray-600">Est. Wait</div>
+              {currentQueue.expireAt && currentQueue.status === "served" ? (
+                <CountdownTimer targetDate={currentQueue.expireAt} />
+              ) : (
+                <div className="text-2xl font-bold text-orange-600">
+                  {currentQueue.estimatedWaitTime}m
+                </div>
+              )}
+              <div className="text-xs text-gray-600">{currentQueue.status === "served" && currentQueue.expireAt ? "Time to Check In" : "Est. Wait"}</div>
             </div>
             <div className="bg-white rounded-lg p-4 text-center shadow-sm col-span-2 md:col-span-1">
               <CheckCircle className="w-5 h-5 text-gray-400 mx-auto mb-2" />
@@ -173,6 +181,26 @@ export default function UserDashboardPage() {
                 </div>
               </div>
             )}
+
+          {currentQueue.status === "served" && currentQueue.expireAt && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 text-center">
+              <p className="text-green-800 font-medium mb-3">It&apos;s your turn! Please check in to confirm your presence.</p>
+              <button
+                onClick={async () => {
+                  try {
+                    await apiService.checkIn();
+                    // Reload queue to update state (clear expiry)
+                    await fetchCurrentQueue();
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+                className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition"
+              >
+                Check In Now
+              </button>
+            </div>
+          )}
 
           <Link
             href="/dashboard/user/myqueue"
@@ -241,6 +269,39 @@ export default function UserDashboardPage() {
           </p>
         </Link>
       </div>
+    </div>
+  );
+}
+
+// Helper component for countdown
+function CountdownTimer({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = useState("");
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    const target = new Date(targetDate).getTime();
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const difference = target - now;
+
+      if (difference <= 0) {
+        clearInterval(interval);
+        setTimeLeft("00:00");
+        setIsExpired(true);
+      } else {
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        setTimeLeft(`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  return (
+    <div className={`text-2xl font-bold ${isExpired ? "text-red-600" : "text-green-600"}`}>
+      {timeLeft}
     </div>
   );
 }

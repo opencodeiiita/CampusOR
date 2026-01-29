@@ -9,6 +9,7 @@ import {
   joinQueueWithToken,
   getCurrentQueueDetails,
   leaveCurrentQueue,
+  performCheckIn,
 } from "./userStatus.service.js";
 import { broadcastQueueUpdate } from "../../server/socket.js";
 
@@ -333,5 +334,19 @@ export const getUserStats = async (req: AuthRequest, res: Response) => {
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const checkIn = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+    // Use the renamed/new service method
+    const result = await performCheckIn({ userId });
+
+    return res.status(200).json(result);
+  } catch (err: any) {
+    return res.status(err.statusCode || 500).json({ success: false, message: err.message || "Failed to check in" });
   }
 };
