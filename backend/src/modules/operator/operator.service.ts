@@ -1,6 +1,7 @@
 import { Queue } from "../queue/queue.model.js";
 import { Token, TokenStatus } from "../queue/token.model.js";
 import { User } from "../auth/user.model.js";
+import { env } from "../../config/env.js";
 import {
   getNowServing,
   popNextToken,
@@ -39,9 +40,9 @@ export class OperatorService {
       const currentlyServed = nowServingId
         ? await Token.findById(nowServingId)
         : await Token.findOne({
-            queue: queueId,
-            status: TokenStatus.SERVED,
-          }).sort({ seq: -1 });
+          queue: queueId,
+          status: TokenStatus.SERVED,
+        }).sort({ seq: -1 });
 
       if (currentlyServed) {
         currentlyServed.status = TokenStatus.COMPLETED;
@@ -63,9 +64,9 @@ export class OperatorService {
       let nextToken = redisNext
         ? await Token.findById(redisNext.id)
         : await Token.findOne({
-            queue: queueId,
-            status: TokenStatus.WAITING,
-          }).sort({ seq: 1 });
+          queue: queueId,
+          status: TokenStatus.WAITING,
+        }).sort({ seq: 1 });
 
       if (nextToken && nextToken.status !== TokenStatus.WAITING) {
         nextToken = await Token.findOne({
@@ -81,8 +82,13 @@ export class OperatorService {
         };
       }
 
-      // Update token status to served
+      // Update status to SERVED
       nextToken.status = TokenStatus.SERVED;
+      // Set expiry based on env config
+      const expiryMinutes = env.TOKEN_EXPIRY_MINUTES || 5;
+
+      nextToken.expireAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+
       await nextToken.save();
 
       await setNowServing(queueId, nextToken._id.toString());
@@ -115,9 +121,9 @@ export class OperatorService {
       const currentToken = nowServingId
         ? await Token.findById(nowServingId)
         : await Token.findOne({
-            queue: queueId,
-            status: TokenStatus.SERVED,
-          }).sort({ seq: -1 });
+          queue: queueId,
+          status: TokenStatus.SERVED,
+        }).sort({ seq: -1 });
 
       if (!currentToken) {
         return {

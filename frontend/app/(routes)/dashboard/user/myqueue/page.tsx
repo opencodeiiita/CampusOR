@@ -5,7 +5,7 @@ import {
   ListChecks,
   Clock,
   MapPin,
-  Users,
+
   AlertCircle,
   XCircle,
   RefreshCw,
@@ -27,6 +27,7 @@ interface CurrentQueue {
   estimatedWaitTime: number;
   joinedAt: string;
   status: string;
+  expireAt?: string;
 }
 
 interface QueueSnapshot {
@@ -39,7 +40,42 @@ interface QueueSnapshot {
     id: string;
     seq: number;
     status: string;
+    expireAt?: string;
   }>;
+}
+
+
+// Helper component for countdown
+function CountdownTimer({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = useState("");
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    const target = new Date(targetDate).getTime();
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const difference = target - now;
+
+      if (difference <= 0) {
+        clearInterval(interval);
+        setTimeLeft("00:00");
+        setIsExpired(true);
+      } else {
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        setTimeLeft(`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  return (
+    <div className={`text-2xl font-bold ${isExpired ? "text-red-600" : "text-green-600"}`}>
+      {timeLeft}
+    </div>
+  );
 }
 
 export default function MyQueuePage() {
@@ -57,10 +93,10 @@ export default function MyQueuePage() {
 
   // Auto-redirect when service is completed
   useEffect(() => {
-    if (currentQueue?.status === "completed") {
+    if (currentQueue?.status === "completed" || currentQueue?.status === "expired") {
       const timer = setTimeout(() => {
         window.location.href = "/dashboard/user";
-      }, 3000); // 3 second delay to show completion message
+      }, 5000); // 5 second delay to show completion/expiry message
 
       return () => clearTimeout(timer);
     }
@@ -89,12 +125,15 @@ export default function MyQueuePage() {
               (t) => t.status === "waiting" && t.seq < myTokenSeq
             ).length;
 
-            setCurrentQueue({
-              ...currentQueue,
-              currentPosition: waitingAhead + 1,
-              estimatedWaitTime: (waitingAhead + 1) * 5,
-              status: myToken.status, // Update status from WebSocket
-            });
+            setCurrentQueue((prev) =>
+              prev ? {
+                ...prev,
+                currentPosition: waitingAhead + 1,
+                estimatedWaitTime: (waitingAhead + 1) * 5,
+                status: myToken.status, // Update status from WebSocket
+                expireAt: myToken.expireAt, // Update expiry from WebSocket
+              } : null
+            );
           }
         }
       },
@@ -154,9 +193,10 @@ export default function MyQueuePage() {
         // Refresh to ensure backend state is synced
         await fetchCurrentQueue();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error leaving queue:", err);
-      setError(err.message || "Failed to leave queue. Please try again.");
+      // @ts-ignore
+      setError(err?.message || "Failed to leave queue. Please try again.");
 
       // Refresh current state even on error to sync with backend
       await fetchCurrentQueue();
@@ -337,13 +377,20 @@ export default function MyQueuePage() {
                 <div className="text-sm text-gray-600 mb-1 font-medium">
                   Estimated Wait
                 </div>
-                <div
-                  className={`text-3xl font-bold ${getWaitTimeColor(
-                    currentQueue.estimatedWaitTime
-                  )}`}
-                >
-                  {currentQueue.estimatedWaitTime}m
-                </div>
+                {currentQueue.expireAt && currentQueue.status === "served" ? (
+                  <div className="flex flex-col items-center">
+                    <CountdownTimer targetDate={currentQueue.expireAt} />
+                    <span className="text-xs text-red-600 font-medium">Time to confirm</span>
+                  </div>
+                ) : (
+                  <div
+                    className={`text-3xl font-bold ${getWaitTimeColor(
+                      currentQueue.estimatedWaitTime
+                    )}`}
+                  >
+                    {currentQueue.estimatedWaitTime}m
+                  </div>
+                )}
               </div>
             </div>
 
@@ -362,13 +409,11 @@ export default function MyQueuePage() {
                       {currentQueue.currentPosition === 1
                         ? "You're next! Please proceed to the service area."
                         : currentQueue.currentPosition <= 3
-                        ? `You're ${currentQueue.currentPosition - 1} ${
-                            currentQueue.currentPosition === 2
-                              ? "person"
-                              : "people"
+                          ? `You're ${currentQueue.currentPosition - 1} ${currentQueue.currentPosition === 2
+                            ? "person"
+                            : "people"
                           } away from being served.`
-                        : `There are ${
-                            currentQueue.currentPosition - 1
+                          : `There are ${currentQueue.currentPosition - 1
                           } people ahead of you. We'll notify you when your turn is approaching.`}
                     </p>
                   </div>
@@ -377,20 +422,37 @@ export default function MyQueuePage() {
             )}
 
             {currentQueue.status === "served" && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                  <div>
-                    <h3 className="font-medium text-green-900 mb-1">
-                      You're Being Served!
-                    </h3>
-                    <p className="text-sm text-green-800">
-                      Your token is now being processed. Please remain at the
-                      counter.
+              <>
+                {currentQueue.expireAt ? (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 text-center">
+                    <h3 className="text-xl font-bold text-green-900 mb-2">It&apos;s Your Turn!</h3>
+                    <p className="text-green-800 mb-4">Please check in immediately to confirm you are present.</p>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await apiService.checkIn();
+                          await fetchCurrentQueue();
+                        } catch (e) {
+                          console.error(e);
+                        }
+                      }}
+                      className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg animate-pulse"
+                    >
+                      CHECK IN NOW
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <CheckCircle className="w-8 h-8 text-green-600" />
+                      <h3 className="text-xl font-bold text-green-900">You&apos;re Being Served!</h3>
+                    </div>
+                    <p className="text-green-800">
+                      Your attendance is confirmed. Please proceed to the counter.
                     </p>
                   </div>
-                </div>
-              </div>
+                )}
+              </>
             )}
 
             {currentQueue.status === "completed" && (
@@ -402,8 +464,23 @@ export default function MyQueuePage() {
                       Service Completed!
                     </h3>
                     <p className="text-sm text-purple-800">
-                      Your service has been completed. Thank you! You'll be
-                      automatically removed from the queue shortly.
+                      Your service has been completed. Thank you! You will be redirected shortly.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentQueue.status === "expired" && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-red-900 mb-1">
+                      Token Expired
+                    </h3>
+                    <p className="text-sm text-red-800">
+                      You did not check in on time. Your token has expired and you will be removed from the queue.
                     </p>
                   </div>
                 </div>
@@ -415,11 +492,10 @@ export default function MyQueuePage() {
               <button
                 onClick={handleLeaveQueue}
                 disabled={leavingQueue || currentQueue.status === "served"}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
-                  currentQueue.status === "served"
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-                }`}
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${currentQueue.status === "served"
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+                  }`}
               >
                 {leavingQueue ? (
                   <>
@@ -443,7 +519,7 @@ export default function MyQueuePage() {
               Not in a Queue
             </h3>
             <p className="text-gray-600 mb-6">
-              You're not currently in any queue. Browse available queues to join
+              You&apos;re not currently in any queue. Browse available queues to join
               one.
             </p>
             <a

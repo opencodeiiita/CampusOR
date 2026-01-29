@@ -7,6 +7,9 @@ import {
   getQueueOperatorView,
   getQueuesForUsers,
   getPredictedWaitTime,
+  extendTokenTime,
+  markTokenNoShow,
+  recallToken,
 } from "./queue.controller.js";
 import { verifyJWT, authorize } from "../../middlewares/auth.js";
 
@@ -39,6 +42,27 @@ router.patch(
   verifyJWT,
   authorize("operator", "admin"),
   updateTokenStatus,
+);
+
+router.post(
+  "/tokens/:tokenId/extend",
+  verifyJWT,
+  authorize("operator", "admin"),
+  extendTokenTime,
+);
+
+router.post(
+  "/tokens/:tokenId/no-show",
+  verifyJWT,
+  authorize("operator", "admin"),
+  markTokenNoShow,
+);
+
+router.post(
+  "/tokens/:tokenId/recall",
+  verifyJWT,
+  authorize("operator", "admin"),
+  recallToken,
 );
 
 export default router;

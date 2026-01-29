@@ -24,6 +24,7 @@ interface QueueSnapshot {
     seq: number;
     status: string;
     createdAt: string;
+    expireAt?: string;
   }>;
   stats: {
     totalWaiting: number;
@@ -38,6 +39,7 @@ interface TokenData {
   seq: number;
   status: string;
   createdAt: string;
+  expireAt?: string;
 }
 
 interface JoinQueueResponse {
@@ -266,6 +268,7 @@ async function getQueueSnapshot(queueId: string): Promise<QueueSnapshot> {
     seq: number;
     status: TokenStatus;
     createdAt: Date;
+    expireAt?: Date;
   }>;
 
   if (redisWaiting !== null) {
@@ -277,17 +280,32 @@ async function getQueueSnapshot(queueId: string): Promise<QueueSnapshot> {
       status: { $in: [TokenStatus.WAITING, TokenStatus.SERVED] },
     }).lean();
 
-    const tokenMap = new Map(tokens.map((t) => [t._id.toString(), t]));
+    // Explicitly fetch recent expired tokens (not in Redis)
+    const expiredTokens = await Token.find({
+      queue: queueId,
+      status: TokenStatus.EXPIRED,
+      updatedAt: { $gt: new Date(Date.now() - 30 * 60 * 1000) },
+    }).lean();
+
+    const allTokens = [...tokens, ...expiredTokens];
+
+    const tokenMap = new Map(allTokens.map((t) => [t._id.toString(), t]));
 
     activeTokens = Array.from(tokenMap.values()).sort(
       (a, b) => a.seq - b.seq,
     ) as typeof activeTokens;
   } else {
     // Only fetch active tokens (WAITING and SERVED) for efficiency
-    // This significantly reduces data transfer and improves performance
+    // Also fetch RECENTLY EXPIRED tokens (last 30 mins) so users see the update
     activeTokens = await Token.find({
       queue: queueId,
-      status: { $in: [TokenStatus.WAITING, TokenStatus.SERVED] },
+      $or: [
+        { status: { $in: [TokenStatus.WAITING, TokenStatus.SERVED] } },
+        {
+          status: TokenStatus.EXPIRED,
+          updatedAt: { $gt: new Date(Date.now() - 30 * 60 * 1000) },
+        },
+      ],
     })
       .sort({ seq: 1 })
       .lean();
@@ -322,6 +340,7 @@ async function getQueueSnapshot(queueId: string): Promise<QueueSnapshot> {
       seq: t.seq,
       status: t.status,
       createdAt: t.createdAt.toISOString(),
+      expireAt: t.expireAt ? t.expireAt.toISOString() : undefined,
     })),
     stats,
   };

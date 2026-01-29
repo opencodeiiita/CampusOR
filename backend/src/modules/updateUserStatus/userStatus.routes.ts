@@ -11,6 +11,7 @@ import {
   markNotificationAsRead,
   getUserState,
   getUserStats,
+  checkIn,
 } from "./userStatus.controller.js";
 
 const userStatusRouter = Router();
@@ -23,6 +24,7 @@ userStatusRouter.get("/history", getHistory);
 
 // New user endpoints for real-time queue management
 userStatusRouter.post("/join-queue", joinQueue);
+userStatusRouter.post("/check-in", checkIn);
 userStatusRouter.get("/current-queue", getCurrentQueue);
 userStatusRouter.post("/leave-queue", leaveQueue);
 

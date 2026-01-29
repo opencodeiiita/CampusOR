@@ -145,20 +145,28 @@ export class TokenService {
   static async updateStatus(
     tokenId: string,
     status: TokenStatus,
+    expireAt?: Date,
   ): Promise<TokenResponse> {
     try {
-      const token = await Token.findByIdAndUpdate(
-        tokenId,
-        { status },
-        { new: true, runValidators: true },
-      );
-
+      const token = await Token.findById(tokenId);
       if (!token) {
         return {
           success: false,
           error: "Token not found",
         };
       }
+
+      token.status = status;
+      if (expireAt) {
+        token.expireAt = expireAt;
+      } else if (
+        status === TokenStatus.COMPLETED ||
+        status === TokenStatus.CANCELLED
+      ) {
+        token.expireAt = undefined;
+      }
+
+      await token.save();
 
       const queueId = token.queue.toString();
       if (status === TokenStatus.WAITING) {
@@ -182,7 +190,8 @@ export class TokenService {
           createdAt: token.createdAt.toISOString(),
         },
       };
-    } catch {
+    } catch (error) {
+      console.error("Update Token Status Error:", error);
       return {
         success: false,
         error: "Failed to update token status",

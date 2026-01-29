@@ -13,6 +13,7 @@ export enum TokenStatus {
   COMPLETED = "completed",
   SKIPPED = "skipped",
   CANCELLED = "cancelled",
+  EXPIRED = "expired",
 }
 
 export interface IToken extends Document {
@@ -20,6 +21,7 @@ export interface IToken extends Document {
   userId: mongoose.Types.ObjectId;
   seq: number;
   status: TokenStatus;
+  expireAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +49,10 @@ const tokenSchema = new Schema<IToken>(
       type: String,
       enum: Object.values(TokenStatus),
       default: TokenStatus.WAITING,
+    },
+    expireAt: {
+      type: Date,
+      index: true, // Efficient polling
     },
   },
   { timestamps: true }

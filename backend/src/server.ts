@@ -5,12 +5,14 @@ import { env } from "./config/env.js";
 import { initializeSocket } from "./server/socket.js";
 import { initializeRedis } from "./config/redis.js";
 import { rebuildRedisStateFromMongo } from "./modules/queue/services/redisQueue.service.js";
+import { startTokenExpiryJob } from "./cron/tokenExpiry.job.js";
 
 const startServer = async () => {
   try {
     await dbConnect();
     initializeRedis();
     await rebuildRedisStateFromMongo();
+    startTokenExpiryJob(); // ✅ Start Cron Job
     const httpServer = http.createServer(app);
     initializeSocket(httpServer);
 

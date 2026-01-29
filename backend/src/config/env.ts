@@ -14,6 +14,7 @@ interface EnvConfig {
   QUEUE_JOIN_COOLDOWN_SECONDS: number;
   QUEUE_JOIN_RATE_LIMIT_PER_MIN: number;
   QUEUE_JOIN_RATE_LIMIT_PER_HOUR: number;
+  TOKEN_EXPIRY_MINUTES: number;
 }
 
 const getEnvConfig = (): EnvConfig => {
@@ -60,6 +61,9 @@ const getEnvConfig = (): EnvConfig => {
     QUEUE_JOIN_RATE_LIMIT_PER_HOUR: QUEUE_JOIN_RATE_LIMIT_PER_HOUR
       ? parseInt(QUEUE_JOIN_RATE_LIMIT_PER_HOUR, 10)
       : 20,
+    TOKEN_EXPIRY_MINUTES: process.env.TOKEN_EXPIRY_MINUTES
+      ? parseInt(process.env.TOKEN_EXPIRY_MINUTES, 10)
+      : 5,
   };
 };
 

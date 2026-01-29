@@ -16,6 +16,7 @@ import {
   ensureCapacityAvailable,
   syncQueueFullFlag,
 } from "../queue/services/capacity.service.js";
+import { broadcastQueueUpdate } from "../../server/socket.js";
 
 interface CheckInQueueInput {
   userId: string;
@@ -52,7 +53,7 @@ const hasActiveToken = async (userId: string): Promise<boolean> => {
 const getActiveToken = async (userId: string) => {
   return await Token.findOne({
     userId: new Types.ObjectId(userId),
-    status: { $in: [TokenStatus.WAITING, TokenStatus.SERVED] },
+    status: { $in: [TokenStatus.WAITING, TokenStatus.SERVED, TokenStatus.EXPIRED] },
   }).sort({ createdAt: -1 });
 };
 
@@ -469,6 +470,7 @@ export const getCurrentQueueDetails = async ({
     estimatedWaitTime: (waitingCount + 1) * 5,
     joinedAt: activeToken.createdAt.toISOString(),
     status: activeToken.status,
+    expireAt: activeToken.expireAt,
   };
 };
 
@@ -514,5 +516,37 @@ export const leaveCurrentQueue = async ({ userId }: GetUserStatusInput) => {
   return {
     message: "Successfully left the queue",
     queueId,
+  };
+};
+
+// Check-In to confirm presence
+export const performCheckIn = async ({ userId }: { userId: string }) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw { statusCode: 404, message: "User not found" };
+  }
+
+  // Check Token table as source of truth
+  const activeToken = await getActiveToken(userId);
+
+  if (!activeToken) {
+    throw { statusCode: 404, message: "You are not in a queue" };
+  }
+
+  if (activeToken.status !== TokenStatus.SERVED) {
+    throw { statusCode: 400, message: "It is not your turn yet" };
+  }
+
+  // Clear expiry time to confirm presence
+  activeToken.expireAt = undefined;
+  await activeToken.save();
+
+  // Broadcast update
+  await broadcastQueueUpdate(activeToken.queue.toString());
+
+  return {
+    success: true,
+    message: "You have checked in!",
+    token: activeToken
   };
 };
