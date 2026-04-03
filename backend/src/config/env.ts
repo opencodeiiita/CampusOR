@@ -4,6 +4,7 @@ dotenv.config();
 
 interface EnvConfig {
   PORT: number;
+  API_URL: string;
   MONGO_URI: string;
   NODE_ENV: string;
   JWT_SECRET: string;
@@ -44,7 +45,8 @@ const getEnvConfig = (): EnvConfig => {
   }
 
   return {
-    PORT: PORT ? parseInt(PORT, 10) : 5000,
+    PORT: PORT ? parseInt(PORT, 10) : 5001,
+    API_URL: process.env.API_URL || `http://localhost:${PORT ? parseInt(PORT, 10) : 5001}/api`,
     MONGO_URI,
     NODE_ENV: NODE_ENV || "development",
     JWT_SECRET,

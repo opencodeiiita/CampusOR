@@ -1,7 +1,10 @@
 
 import axios from 'axios';
+import dotenv from 'dotenv';
 
-const API_URL = 'http://localhost:5000/api';
+dotenv.config();
+
+const API_URL = process.env.API_URL || `http://localhost:${process.env.PORT || 5001}/api`;
 const ADMIN_EMAIL = "admin@college.edu"
 const ADMIN_PASSWORD = "StrongPassword123";
 
