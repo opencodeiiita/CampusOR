@@ -1,4 +1,5 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
+import { env } from "../../config/env.js";
 import {
   getQueueJoinedEmailHtml,
   getQueueJoinedEmailText,
@@ -13,16 +14,26 @@ import {
 } from "./email-template-verification.js";
 import { getAdminInviteEmailTemplate } from "./email-template-admin-invite.js";
 
-// Initialize Resend with API key from environment
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create nodemailer transporter
+const createTransporter = () => {
+  return nodemailer.createTransporter({
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT,
+    secure: env.SMTP_SECURE,
+    auth: {
+      user: env.SMTP_USER,
+      pass: env.SMTP_PASS,
+    },
+  });
+};
 
-// Get the from email from environment or use default
+// Get the from email from environment
 const getFromEmail = (): string => {
-  return process.env.FROM_EMAIL || "onboarding@resend.dev";
+  return env.FROM_EMAIL;
 };
 
 interface SendEmailOptions {
-  to: string;
+  to: string | string[]; // Support single email or array of emails
   subject: string;
   html: string;
   text?: string;
@@ -30,7 +41,7 @@ interface SendEmailOptions {
 
 interface SendEmailResult {
   success: boolean;
-  data?: { id: string };
+  data?: { messageId: string };
   error?: string;
 }
 
@@ -41,25 +52,25 @@ export const sendEmail = async ({
   text,
 }: SendEmailOptions): Promise<SendEmailResult> => {
   try {
-    const { data, error } = await resend.emails.send({
+    const transporter = createTransporter();
+
+    // Ensure 'to' is always an array
+    const recipients = Array.isArray(to) ? to : [to];
+
+    const mailOptions = {
       from: getFromEmail(),
-      to: [to],
+      to: recipients,
       subject,
       html,
       text,
-    });
+    };
 
-    if (error) {
-      console.error("Resend error:", error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+    const info = await transporter.sendMail(mailOptions);
 
+    console.log("Email sent successfully:", info.messageId);
     return {
       success: true,
-      data: data ? { id: data.id } : undefined,
+      data: { messageId: info.messageId },
     };
   } catch (err) {
     console.error("Email sending error:", err);
@@ -189,27 +200,13 @@ export const sendEmailVerificationOtp = async (
 };
 
 /**
- * Send admin invite email
+ * Send email to multiple recipients
  */
-export const sendAdminInviteEmail = async (
-  email: string,
-  inviteLink: string,
-  inviterName: string
-): Promise<void> => {
-  try {
-    const html = getAdminInviteEmailTemplate(inviteLink, inviterName);
-
-    const result = await sendEmail({
-      to: email,
-      subject: "You have been invited to join CampusOR as Admin",
-      html,
-      text: `You have been invited by ${inviterName} to join CampusOR as an Administrator. Please follow this link to accept: ${inviteLink}`,
-    });
-
-    if (!result.success) {
-      console.error("Failed to send admin invite email:", result.error);
-    }
-  } catch (error) {
-    console.error("Error sending admin invite email:", error);
-  }
+export const sendBulkEmail = async ({
+  to,
+  subject,
+  html,
+  text,
+}: SendEmailOptions): Promise<SendEmailResult> => {
+  return sendEmail({ to, subject, html, text });
 };

@@ -11,6 +11,13 @@ interface EnvConfig {
   JWT_EXPIRES_IN: string;
   FRONTEND_URL: string;
   REDIS_URL: string;
+  // Email configuration
+  SMTP_HOST: string;
+  SMTP_PORT: number;
+  SMTP_SECURE: boolean;
+  SMTP_USER: string;
+  SMTP_PASS: string;
+  FROM_EMAIL: string;
   // Rate limiting config
   QUEUE_JOIN_COOLDOWN_SECONDS: number;
   QUEUE_JOIN_RATE_LIMIT_PER_MIN: number;
@@ -27,6 +34,12 @@ const getEnvConfig = (): EnvConfig => {
     JWT_EXPIRES_IN,
     FRONTEND_URL,
     REDIS_URL,
+    SMTP_HOST,
+    SMTP_PORT,
+    SMTP_SECURE,
+    SMTP_USER,
+    SMTP_PASS,
+    FROM_EMAIL,
     QUEUE_JOIN_COOLDOWN_SECONDS,
     QUEUE_JOIN_RATE_LIMIT_PER_MIN,
     QUEUE_JOIN_RATE_LIMIT_PER_HOUR,
@@ -53,6 +66,13 @@ const getEnvConfig = (): EnvConfig => {
     JWT_EXPIRES_IN: JWT_EXPIRES_IN || "1h",
     FRONTEND_URL: FRONTEND_URL || "http://localhost:3000",
     REDIS_URL: REDIS_URL || "redis://localhost:6379",
+    // Email configuration
+    SMTP_HOST: SMTP_HOST || "smtp.gmail.com",
+    SMTP_PORT: SMTP_PORT ? parseInt(SMTP_PORT, 10) : 587,
+    SMTP_SECURE: SMTP_SECURE === "true",
+    SMTP_USER: SMTP_USER || "",
+    SMTP_PASS: SMTP_PASS || "",
+    FROM_EMAIL: FROM_EMAIL || "noreply@campusor.com",
     // Rate limiting defaults
     QUEUE_JOIN_COOLDOWN_SECONDS: QUEUE_JOIN_COOLDOWN_SECONDS
       ? parseInt(QUEUE_JOIN_COOLDOWN_SECONDS, 10)
