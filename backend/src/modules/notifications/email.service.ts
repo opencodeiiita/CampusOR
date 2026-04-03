@@ -16,7 +16,7 @@ import { getAdminInviteEmailTemplate } from "./email-template-admin-invite.js";
 
 // Create nodemailer transporter
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
     secure: env.SMTP_SECURE,
