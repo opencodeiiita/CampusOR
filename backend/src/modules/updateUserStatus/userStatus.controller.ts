@@ -12,6 +12,10 @@ import {
   performCheckIn,
 } from "./userStatus.service.js";
 import { broadcastQueueUpdate } from "../../server/socket.js";
+import {
+  getNotificationsForUser,
+  markNotificationRead,
+} from "../notifications/notification.service.js";
 
 export const checkInQueue = async (req: AuthRequest, res: Response) => {
   try {
@@ -271,19 +275,51 @@ export const leaveQueue = async (req: AuthRequest, res: Response) => {
 // --- New Endpoints ---
 
 export const getNotifications = async (req: AuthRequest, res: Response) => {
-  // TODO: Implement real notification persistence
-  // For now, return empty list or mock to assume "no notifications" or unblock frontend
-  return res.status(200).json({
-    success: true,
-    data: [],
-  });
+  try {
+    const userId = req.user?.sub;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const unreadOnly = req.query.unread === "true";
+    const notifications = await getNotificationsForUser(userId, unreadOnly);
+
+    return res.status(200).json({
+      success: true,
+      data: notifications,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to load notifications",
+    });
+  }
 };
 
 export const markNotificationAsRead = async (req: AuthRequest, res: Response) => {
-  // TODO: Implement read logic
-  return res.status(200).json({
-    success: true,
-  });
+  try {
+    const userId = req.user?.sub;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const updated = await markNotificationRead(userId, req.params.id);
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to update notification",
+    });
+  }
 };
 
 export const getUserState = async (req: AuthRequest, res: Response) => {

@@ -4,8 +4,8 @@ import { Toaster } from "sonner";
 import GlobalHooks from "./components/GlobalHooks";
 
 export const metadata = {
-  title: "CampusOR",
-  description: "Campus Online Queue & Reservation System",
+  title: "uniq",
+  description: "uniq queue operations platform",
 };
 
 export default function RootLayout({

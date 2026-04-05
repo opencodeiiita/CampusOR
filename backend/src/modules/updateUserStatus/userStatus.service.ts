@@ -17,6 +17,7 @@ import {
   syncQueueFullFlag,
 } from "../queue/services/capacity.service.js";
 import { broadcastQueueUpdate } from "../../server/socket.js";
+import { createNotification } from "../notifications/notification.service.js";
 
 interface CheckInQueueInput {
   userId: string;
@@ -142,6 +143,15 @@ export const checkInQueue = async ({ userId, queueId }: CheckInQueueInput) => {
       console.error("Failed to send queue joined email:", error);
     },
   );
+
+  await createNotification({
+    userId,
+    queueId: queue._id.toString(),
+    queueName: queue.name,
+    title: "Joined queue",
+    message: `You joined ${queue.name} at ${queue.location}.`,
+    type: "info",
+  });
 
   return {
     message: "Successfully joined the queue",
@@ -394,6 +404,15 @@ export const joinQueueWithToken = async ({
     },
   );
 
+  await createNotification({
+    userId,
+    queueId: queue._id.toString(),
+    queueName: queue.name,
+    title: "Joined queue",
+    message: `You joined ${queue.name} at ${queue.location}.`,
+    type: "info",
+  });
+
   // Count waiting tokens for position
   const waitingCount = await Token.countDocuments({
     queue: queue._id,
@@ -513,6 +532,16 @@ export const leaveCurrentQueue = async ({ userId }: GetUserStatusInput) => {
 
   await syncQueueFullFlag(queueId);
 
+  const queue = await Queue.findById(queueId).lean();
+  await createNotification({
+    userId,
+    queueId,
+    queueName: queue?.name || "Queue",
+    title: "Left queue",
+    message: `Your token was cancelled for ${queue?.name || "the queue"}.`,
+    type: "warning",
+  });
+
   return {
     message: "Successfully left the queue",
     queueId,
@@ -543,6 +572,16 @@ export const performCheckIn = async ({ userId }: { userId: string }) => {
 
   // Broadcast update
   await broadcastQueueUpdate(activeToken.queue.toString());
+
+  const queue = await Queue.findById(activeToken.queue).lean();
+  await createNotification({
+    userId,
+    queueId: activeToken.queue.toString(),
+    queueName: queue?.name || "Queue",
+    title: "Check-in confirmed",
+    message: `Your presence has been confirmed for ${queue?.name || "the queue"}.`,
+    type: "success",
+  });
 
   return {
     success: true,

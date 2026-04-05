@@ -91,7 +91,7 @@ export default function AcceptInvitePage() {
             <Link href="/" className="flex items-center gap-3 group">
               <img
                 src="/logo/LOGO.svg"
-                alt="CampusOR logo"
+                alt="uniq logo"
                 className="h-11 w-auto object-contain md:h-14"
               />
             </Link>

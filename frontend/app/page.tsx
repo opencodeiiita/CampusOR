@@ -46,16 +46,11 @@ const audienceList = [
 
 const steps = ["Join Queue", "Track Progress", "Get Notified", "Get Served"];
 
-export default function home() {
+export default function Home() {
   const { isAuthenticated, logout } = useAuth();
   const primaryCta = isAuthenticated ? "/dashboard/user" : "/login";
   const secondaryCta = isAuthenticated ? "/dashboard/user" : "/signup";
-  const [isVisible, setIsVisible] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -75,16 +70,13 @@ export default function home() {
   }, [isMenuOpen]);
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 scroll-smooth">
-      <nav className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur animate-in fade-in slide-in-from-top duration-700 relative">
+    <main className="brand-shell min-h-screen text-slate-900">
+      <nav className="animate-in fade-in slide-in-from-top relative sticky top-0 z-30 border-b border-[var(--color-brand-line)] bg-white/76 backdrop-blur-xl duration-700">
         <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between relative z-30">
-            <Link href="/" className="flex items-center gap-3 group">
-              <img
-                src="/logo/LOGO.svg"
-                alt="CampusOR logo"
-                className="h-11 w-auto object-contain drop-shadow-[0_4px_12px_rgba(15,23,42,0.18)] transition-transform duration-300 group-hover:scale-[1.03] md:h-14"
-              />
+            <Link href="/" className="brand-wordmark group">
+              <span className="brand-wordmark-mark">u</span>
+              <span className="brand-wordmark-name">uniq</span>
             </Link>
 
             <div className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
@@ -119,7 +111,7 @@ export default function home() {
                   </button>
                   <Link
                     href="/dashboard/user"
-                    className="rounded-full bg-slate-900 px-4 py-2 text-white transition-all duration-300 hover:bg-slate-800 hover:scale-105 hover:shadow-lg"
+                    className="brand-primary-button rounded-full px-4 py-2 text-sm"
                   >
                     Dashboard
                   </Link>
@@ -134,7 +126,7 @@ export default function home() {
                   </Link>
                   <Link
                     href="/signup"
-                    className="rounded-full bg-slate-900 px-4 py-2 text-white transition-all duration-300 hover:bg-slate-800 hover:scale-105 hover:shadow-lg"
+                    className="brand-primary-button rounded-full px-4 py-2 text-sm"
                   >
                     Get Started
                   </Link>
@@ -277,25 +269,23 @@ export default function home() {
           />
         </div>
         <div
-          className={`relative mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.2fr_0.8fr] md:items-center transition-all duration-1000 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
+          className="relative mx-auto grid max-w-6xl gap-10 px-6 py-16 transition-all duration-1000 md:grid-cols-[1.2fr_0.8fr] md:items-center opacity-100 translate-y-0"
         >
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 animate-in fade-in slide-in-from-left duration-700">
-              Campus Queueing, Reimagined
+            <div className="brand-badge animate-in fade-in slide-in-from-left duration-700">
+              Professional queue operations, reimagined
             </div>
             <h1
               className="text-4xl font-semibold leading-tight text-slate-900 md:text-5xl animate-in fade-in slide-in-from-left duration-700"
               style={{ animationDelay: "0.1s" }}
             >
-              Modern virtual queues for every campus service point.
+              A cleaner, faster queue experience for modern service teams.
             </h1>
             <p
               className="max-w-xl text-base text-slate-600 md:text-lg animate-in fade-in slide-in-from-left duration-700"
               style={{ animationDelay: "0.2s" }}
             >
-              CampusOR replaces physical lines with a live, mobile-first queue
+              uniq replaces physical lines with a live, mobile-first queue
               experience. Keep students moving, reduce crowding, and make every
               service interaction smoother.
             </p>
@@ -305,15 +295,15 @@ export default function home() {
             >
               <Link
                 href={primaryCta}
-                className="rounded-full bg-sky-600 px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-sky-700 hover:scale-105 hover:shadow-xl"
+                className="brand-primary-button rounded-full px-6 py-3 text-sm"
               >
                 Explore Queues
               </Link>
               <Link
                 href={secondaryCta}
-                className="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition-all duration-300 hover:border-slate-300 hover:bg-slate-100 hover:scale-105 hover:shadow-lg"
+                className="brand-secondary-button rounded-full px-6 py-3 text-sm"
               >
-                {isAuthenticated ? "Get Started" : "Join CampusOR"}
+                {isAuthenticated ? "Open Workspace" : "Join uniq"}
               </Link>
             </div>
             <div
@@ -346,14 +336,10 @@ export default function home() {
           >
             <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-lg transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                <img
-                  src="/logo/LOGO-removebg-preview.png"
-                  alt="CampusOR"
-                  className="h-10 w-auto object-contain"
-                />
+                <span className="brand-wordmark-mark">u</span>
                 <div>
                   <p className="text-sm font-semibold text-slate-900">
-                    CampusOR Live Queue
+                    uniq Live Queue
                   </p>
                   <p className="text-xs text-slate-500">
                     Powered by smart campus operations
@@ -461,7 +447,7 @@ export default function home() {
                 A live, virtual queue built for campuses.
               </h3>
               <p className="mt-4 text-base text-slate-600">
-                CampusOR replaces physical lines with real-time visibility,
+                uniq replaces physical lines with real-time visibility,
                 notifications, and operator controls — all in one system.
               </p>
             </div>
@@ -550,7 +536,7 @@ export default function home() {
         <div className="mx-auto max-w-6xl px-6 py-20">
           <div className="text-center mb-14">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
-              How CampusOR Works
+              How uniq Works
             </p>
             <h2 className="mt-3 text-3xl font-semibold text-slate-900">
               A simple flow from join to serve.
@@ -627,7 +613,7 @@ export default function home() {
               Ready to modernize your queue experience?
             </h2>
             <p className="mt-3 text-base text-slate-600">
-              Launch CampusOR across services and make every visit faster and
+              Launch uniq across services and make every visit faster and
               calmer.
             </p>
           </div>

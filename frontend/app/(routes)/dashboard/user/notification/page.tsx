@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
   Check,
@@ -19,27 +19,25 @@ export default function NotificationPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [filter]);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      const mockData = await userQueueService.getNotifications(
+      const response = await userQueueService.getNotifications(
         filter === "unread"
       );
-      setNotifications(mockData.data);
+      setNotifications(response.data);
     } catch (err) {
       console.error("Error fetching notifications:", err);
       setError("Failed to load notifications. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -130,11 +128,16 @@ export default function NotificationPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Bell className="w-6 h-6 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+        <div className="brand-page-header">
+          <div className="flex items-center gap-3">
+            <Bell className="h-6 w-6 text-white" />
+            <div>
+              <h1 className="text-2xl font-bold text-white">Notifications</h1>
+              <p className="text-sm text-white/80">Live updates from your queue activity.</p>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="brand-section-card p-8">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-gray-600">Loading notifications...</span>
@@ -147,12 +150,12 @@ export default function NotificationPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="brand-page-header flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Bell className="w-6 h-6 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+          <Bell className="w-6 h-6 text-white" />
+          <h1 className="text-2xl font-bold text-white">Notifications</h1>
           {unreadCount > 0 && (
-            <span className="bg-blue-600 text-white text-sm font-medium px-2 py-1 rounded-full">
+            <span className="rounded-full border border-white/20 bg-white/12 px-2 py-1 text-sm font-medium text-white">
               {unreadCount} unread
             </span>
           )}
@@ -161,7 +164,7 @@ export default function NotificationPage() {
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllAsRead}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
+            className="flex items-center gap-2 text-sm font-medium text-white/90 hover:text-white"
           >
             <Check className="w-4 h-4" />
             Mark all as read
@@ -171,7 +174,7 @@ export default function NotificationPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-yellow-600" />
             <span className="text-yellow-800">{error}</span>
@@ -180,23 +183,23 @@ export default function NotificationPage() {
       )}
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="brand-section-card flex gap-2 p-2">
         <button
           onClick={() => setFilter("all")}
-          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
             filter === "all"
-              ? "text-blue-600 border-blue-600"
-              : "text-gray-600 border-transparent hover:text-gray-900"
+              ? "bg-white text-[#085078] shadow-sm"
+              : "text-gray-600 hover:bg-white/70 hover:text-gray-900"
           }`}
         >
           All Notifications
         </button>
         <button
           onClick={() => setFilter("unread")}
-          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
             filter === "unread"
-              ? "text-blue-600 border-blue-600"
-              : "text-gray-600 border-transparent hover:text-gray-900"
+              ? "bg-white text-[#085078] shadow-sm"
+              : "text-gray-600 hover:bg-white/70 hover:text-gray-900"
           }`}
         >
           Unread {unreadCount > 0 && `(${unreadCount})`}
@@ -204,7 +207,7 @@ export default function NotificationPage() {
       </div>
 
       {/* Notifications List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="brand-section-card p-0">
         {notifications.length === 0 ? (
           <div className="p-8 text-center">
             <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />

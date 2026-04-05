@@ -4,7 +4,9 @@ class ApiService {
 
   constructor() {
     this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    this.apiBaseUrl = `${this.baseUrl.replace(/\/+$/, "")}/api`;
+    const normalizedBase = this.baseUrl.replace(/\/+$/, "");
+    const baseWithoutApi = normalizedBase.replace(/\/api$/i, "");
+    this.apiBaseUrl = `${baseWithoutApi}/api`;
   }
 
   private buildUrl(endpoint: string): string {

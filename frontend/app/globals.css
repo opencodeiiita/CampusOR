@@ -1,10 +1,142 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+:root {
+  --color-brand-deep: #085078;
+  --color-brand-soft: #85d8ce;
+  --color-brand-ink: #0b2230;
+  --color-brand-surface: #f4fbfb;
+  --color-brand-line: rgba(8, 80, 120, 0.14);
+  --color-brand-shadow: rgba(8, 80, 120, 0.18);
+}
 
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-brand-ink);
+  background:
+    radial-gradient(circle at top left, rgba(133, 216, 206, 0.22), transparent 32%),
+    linear-gradient(180deg, #f9fdfd 0%, #f3f9fb 56%, #eef6f8 100%);
+}
 
 .btn {
-  @apply px-4 py-2 rounded-lg text-sm font-medium border 
-         bg-white hover:bg-gray-100 transition 
-         cursor-pointer shadow-sm;
+  @apply cursor-pointer rounded-xl border px-4 py-2 text-sm font-medium transition shadow-sm;
+  border-color: var(--color-brand-line);
+  background: white;
+}
+
+.btn:hover {
+  background: var(--color-brand-surface);
+}
+
+.brand-shell {
+  background:
+    radial-gradient(circle at top right, rgba(133, 216, 206, 0.18), transparent 24%),
+    linear-gradient(180deg, #f7fcfc 0%, #eef6f8 100%);
+}
+
+.brand-panel {
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid var(--color-brand-line);
+  box-shadow: 0 18px 48px var(--color-brand-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.brand-sidebar {
+  background:
+    linear-gradient(180deg, rgba(8, 80, 120, 0.98) 0%, rgba(21, 116, 144, 0.97) 62%, rgba(133, 216, 206, 0.95) 100%);
+  color: white;
+}
+
+.brand-badge {
+  @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em];
+  background: rgba(133, 216, 206, 0.16);
+  color: var(--color-brand-deep);
+  border: 1px solid rgba(133, 216, 206, 0.38);
+}
+
+.brand-input {
+  @apply w-full rounded-xl border px-4 py-3 transition-colors focus:outline-none focus:ring-2;
+  border-color: rgba(8, 80, 120, 0.16);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.brand-input:focus {
+  border-color: var(--color-brand-deep);
+  box-shadow: 0 0 0 3px rgba(133, 216, 206, 0.28);
+}
+
+.brand-primary-button {
+  @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold text-white transition-all;
+  background-image: linear-gradient(135deg, var(--color-brand-deep), #1a87a0 58%, var(--color-brand-soft));
+  box-shadow: 0 16px 32px rgba(8, 80, 120, 0.22);
+}
+
+.brand-primary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 36px rgba(8, 80, 120, 0.24);
+}
+
+.brand-secondary-button {
+  @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition-all;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--color-brand-deep);
+  border: 1px solid rgba(8, 80, 120, 0.16);
+}
+
+.brand-secondary-button:hover {
+  background: white;
+  transform: translateY(-1px);
+}
+
+.brand-wordmark {
+  @apply inline-flex items-center gap-3 font-semibold tracking-tight;
+  color: var(--color-brand-ink);
+}
+
+.brand-wordmark-mark {
+  @apply inline-flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-bold text-white;
+  background-image: linear-gradient(135deg, var(--color-brand-deep), var(--color-brand-soft));
+  box-shadow: 0 12px 24px rgba(8, 80, 120, 0.22);
+}
+
+.brand-wordmark-name {
+  @apply text-xl font-semibold lowercase;
+}
+
+.brand-page-header {
+  @apply rounded-[28px] px-6 py-6 sm:px-8;
+  background:
+    linear-gradient(135deg, rgba(8, 80, 120, 0.98) 0%, rgba(21, 116, 144, 0.92) 55%, rgba(133, 216, 206, 0.88) 100%);
+  box-shadow: 0 20px 48px rgba(8, 80, 120, 0.22);
+  color: white;
+}
+
+.brand-section-card {
+  @apply rounded-[24px] p-6;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--color-brand-line);
+  box-shadow: 0 16px 32px rgba(8, 80, 120, 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.brand-subtle-card {
+  @apply rounded-2xl p-4;
+  background: rgba(244, 251, 251, 0.88);
+  border: 1px solid rgba(8, 80, 120, 0.08);
+}
+
+.brand-link-card {
+  @apply rounded-[24px] p-6 transition-all duration-300;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--color-brand-line);
+  box-shadow: 0 14px 28px rgba(8, 80, 120, 0.08);
+}
+
+.brand-link-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(8, 80, 120, 0.14);
 }

@@ -1,21 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  ListChecks,
-  Clock,
-  MapPin,
-
-  AlertCircle,
-  XCircle,
-  RefreshCw,
-  LogOut,
-  CheckCircle,
-  Loader2,
-  Activity,
-} from "lucide-react";
 import { apiService } from "@/app/services/api";
 import { subscribeToQueue } from "@/lib/websocket";
+import {
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  ListChecks,
+  Loader2,
+  LogOut,
+  MapPin,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface CurrentQueue {
   id: string;
@@ -44,8 +43,6 @@ interface QueueSnapshot {
   }>;
 }
 
-
-// Helper component for countdown
 function CountdownTimer({ targetDate }: { targetDate: string }) {
   const [timeLeft, setTimeLeft] = useState("");
   const [isExpired, setIsExpired] = useState(false);
@@ -72,7 +69,7 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
   }, [targetDate]);
 
   return (
-    <div className={`text-2xl font-bold ${isExpired ? "text-red-600" : "text-green-600"}`}>
+    <div className={`text-2xl font-bold ${isExpired ? "text-red-600" : "text-emerald-600"}`}>
       {timeLeft}
     </div>
   );
@@ -80,9 +77,7 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
 
 export default function MyQueuePage() {
   const [currentQueue, setCurrentQueue] = useState<CurrentQueue | null>(null);
-  const [queueSnapshot, setQueueSnapshot] = useState<QueueSnapshot | null>(
-    null
-  );
+  const [queueSnapshot, setQueueSnapshot] = useState<QueueSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [leavingQueue, setLeavingQueue] = useState(false);
@@ -91,12 +86,11 @@ export default function MyQueuePage() {
     fetchCurrentQueue();
   }, []);
 
-  // Auto-redirect when service is completed
   useEffect(() => {
     if (currentQueue?.status === "completed" || currentQueue?.status === "expired") {
       const timer = setTimeout(() => {
         window.location.href = "/dashboard/user";
-      }, 5000); // 5 second delay to show completion/expiry message
+      }, 5000);
 
       return () => clearTimeout(timer);
     }
@@ -105,36 +99,30 @@ export default function MyQueuePage() {
   useEffect(() => {
     if (!currentQueue) return;
 
-    // Subscribe to WebSocket for real-time updates
     const unsubscribe = subscribeToQueue(currentQueue.queueId, {
       onUpdate: (payload) => {
         const snapshot = payload as QueueSnapshot;
         setQueueSnapshot(snapshot);
 
-        // Update position and status based on real-time data
-        if (currentQueue) {
-          const myTokenSeq = parseInt(
-            currentQueue.tokenNumber.replace(/\D/g, "")
+        const myTokenSeq = parseInt(currentQueue.tokenNumber.replace(/\D/g, ""));
+        const myToken = snapshot.tokens.find((t) => t.seq === myTokenSeq);
+
+        if (myToken) {
+          const waitingAhead = snapshot.tokens.filter(
+            (t) => t.status === "waiting" && t.seq < myTokenSeq,
+          ).length;
+
+          setCurrentQueue((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentPosition: waitingAhead + 1,
+                  estimatedWaitTime: (waitingAhead + 1) * 5,
+                  status: myToken.status,
+                  expireAt: myToken.expireAt,
+                }
+              : null,
           );
-
-          // Find my token in the snapshot to get current status
-          const myToken = snapshot.tokens.find((t) => t.seq === myTokenSeq);
-
-          if (myToken) {
-            const waitingAhead = snapshot.tokens.filter(
-              (t) => t.status === "waiting" && t.seq < myTokenSeq
-            ).length;
-
-            setCurrentQueue((prev) =>
-              prev ? {
-                ...prev,
-                currentPosition: waitingAhead + 1,
-                estimatedWaitTime: (waitingAhead + 1) * 5,
-                status: myToken.status, // Update status from WebSocket
-                expireAt: myToken.expireAt, // Update expiry from WebSocket
-              } : null
-            );
-          }
         }
       },
       onError: (err) => {
@@ -157,9 +145,9 @@ export default function MyQueuePage() {
       } else {
         setCurrentQueue(null);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching current queue:", err);
-      setError(err.message || "Failed to load your queue status");
+      setError(err instanceof Error ? err.message : "Failed to load your queue status");
       setCurrentQueue(null);
     } finally {
       setLoading(false);
@@ -170,7 +158,7 @@ export default function MyQueuePage() {
     if (!currentQueue) return;
 
     const confirmed = window.confirm(
-      `Are you sure you want to leave the queue for ${currentQueue.queueName}? Your token ${currentQueue.tokenNumber} will be cancelled.`
+      `Are you sure you want to leave the queue for ${currentQueue.queueName}? Your token ${currentQueue.tokenNumber} will be cancelled.`,
     );
 
     if (!confirmed) return;
@@ -179,26 +167,16 @@ export default function MyQueuePage() {
       setLeavingQueue(true);
       setError(null);
 
-      const response = await apiService.post(
-        "/user-status/leave-queue",
-        {},
-        true
-      );
+      const response = await apiService.post("/user-status/leave-queue", {}, true);
 
       if (response.success) {
-        // Clear local state
         setCurrentQueue(null);
         setQueueSnapshot(null);
-
-        // Refresh to ensure backend state is synced
         await fetchCurrentQueue();
       }
     } catch (err: unknown) {
       console.error("Error leaving queue:", err);
-      // @ts-ignore
-      setError(err?.message || "Failed to leave queue. Please try again.");
-
-      // Refresh current state even on error to sync with backend
+      setError(err instanceof Error ? err.message : "Failed to leave queue. Please try again.");
       await fetchCurrentQueue();
     } finally {
       setLeavingQueue(false);
@@ -208,13 +186,13 @@ export default function MyQueuePage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "waiting":
-        return "bg-blue-100 text-blue-800";
+        return "bg-[rgba(133,216,206,0.18)] text-[#085078]";
       case "served":
-        return "bg-green-100 text-green-800";
+        return "bg-emerald-100 text-emerald-800";
       case "skipped":
-        return "bg-gray-100 text-gray-800";
+        return "bg-slate-100 text-slate-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-slate-100 text-slate-800";
     }
   };
 
@@ -234,9 +212,7 @@ export default function MyQueuePage() {
   const getStatusText = (status: string) => {
     switch (status) {
       case "waiting":
-        return currentQueue && currentQueue.currentPosition <= 3
-          ? "Your Turn Soon!"
-          : "Waiting";
+        return currentQueue && currentQueue.currentPosition <= 3 ? "Your Turn Soon!" : "Waiting";
       case "served":
         return "Being Served";
       case "skipped":
@@ -247,8 +223,8 @@ export default function MyQueuePage() {
   };
 
   const getWaitTimeColor = (minutes: number) => {
-    if (minutes <= 5) return "text-green-600";
-    if (minutes <= 15) return "text-yellow-600";
+    if (minutes <= 5) return "text-emerald-600";
+    if (minutes <= 15) return "text-amber-600";
     return "text-red-600";
   };
 
@@ -264,16 +240,21 @@ export default function MyQueuePage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <ListChecks className="w-6 h-6 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">My Queue</h1>
+        <div className="brand-page-header">
+          <div className="flex items-center gap-3">
+            <ListChecks className="h-6 w-6 text-white" />
+            <div>
+              <h1 className="text-2xl font-bold text-white">My Queue</h1>
+              <p className="text-sm text-white/80">
+                Track your live token status, wait time, and service progress.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="brand-section-card p-8">
           <div className="flex items-center justify-center">
-            <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
-            <span className="ml-3 text-gray-600">
-              Loading your queue status...
-            </span>
+            <Loader2 className="h-8 w-8 animate-spin text-[#085078]" />
+            <span className="ml-3 text-gray-600">Loading your queue status...</span>
           </div>
         </div>
       </div>
@@ -282,24 +263,27 @@ export default function MyQueuePage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="brand-page-header flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ListChecks className="w-6 h-6 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">My Queue</h1>
+          <ListChecks className="w-6 h-6 text-white" />
+          <div>
+            <h1 className="text-2xl font-bold text-white">My Queue</h1>
+            <p className="text-sm text-white/80">
+              Track your live token status, wait time, and service progress.
+            </p>
+          </div>
         </div>
         <button
           onClick={fetchCurrentQueue}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="brand-secondary-button gap-2 px-4 py-2 text-sm !border-white/20 !bg-white/12 !text-white hover:!bg-white/18"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
         </button>
       </div>
 
-      {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50/90 p-4">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-red-600" />
             <span className="text-red-800">{error}</span>
@@ -307,28 +291,23 @@ export default function MyQueuePage() {
         </div>
       )}
 
-      {/* Paused Queue Warning */}
       {isQueuePaused && currentQueue && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
-            <span className="text-yellow-800 font-medium">
+            <AlertCircle className="w-5 h-5 text-amber-600" />
+            <span className="font-medium text-amber-800">
               This queue is currently paused. Service will resume shortly.
             </span>
           </div>
         </div>
       )}
 
-      {/* Queue Status */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="brand-section-card p-0">
         {currentQueue ? (
           <div className="p-6">
-            {/* Queue Header */}
-            <div className="flex items-start justify-between mb-6">
+            <div className="mb-6 flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">
-                  {currentQueue.queueName}
-                </h2>
+                <h2 className="mb-2 text-xl font-bold text-gray-900">{currentQueue.queueName}</h2>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
@@ -344,8 +323,8 @@ export default function MyQueuePage() {
               <div className="flex items-center gap-2">
                 {getStatusIcon(currentQueue.status)}
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                    currentQueue.status
+                  className={`rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(
+                    currentQueue.status,
                   )}`}
                 >
                   {getStatusText(currentQueue.status)}
@@ -353,68 +332,52 @@ export default function MyQueuePage() {
               </div>
             </div>
 
-            {/* Token and Position */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center border border-blue-200">
-                <div className="text-sm text-blue-700 mb-1 font-medium">
-                  Your Token
-                </div>
-                <div className="text-3xl font-bold text-blue-600 font-mono">
+            <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
+              <div className="rounded-2xl border border-[rgba(8,80,120,0.12)] bg-[rgba(133,216,206,0.12)] p-4 text-center">
+                <div className="mb-1 text-sm font-medium text-[#085078]">Your Token</div>
+                <div className="font-mono text-3xl font-bold text-[#085078]">
                   {currentQueue.tokenNumber}
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
-                <div className="text-sm text-gray-600 mb-1 font-medium">
-                  Position in Queue
-                </div>
-                <div className="text-3xl font-bold text-gray-900">
-                  #{currentQueue.currentPosition}
-                </div>
+              <div className="brand-subtle-card text-center">
+                <div className="mb-1 text-sm font-medium text-gray-600">Position in Queue</div>
+                <div className="text-3xl font-bold text-gray-900">#{currentQueue.currentPosition}</div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
-                <div className="text-sm text-gray-600 mb-1 font-medium">
-                  Estimated Wait
-                </div>
+              <div className="brand-subtle-card text-center">
+                <div className="mb-1 text-sm font-medium text-gray-600">Estimated Wait</div>
                 {currentQueue.expireAt && currentQueue.status === "served" ? (
                   <div className="flex flex-col items-center">
                     <CountdownTimer targetDate={currentQueue.expireAt} />
-                    <span className="text-xs text-red-600 font-medium">Time to confirm</span>
+                    <span className="text-xs font-medium text-red-600">Time to confirm</span>
                   </div>
                 ) : (
-                  <div
-                    className={`text-3xl font-bold ${getWaitTimeColor(
-                      currentQueue.estimatedWaitTime
-                    )}`}
-                  >
+                  <div className={`text-3xl font-bold ${getWaitTimeColor(currentQueue.estimatedWaitTime)}`}>
                     {currentQueue.estimatedWaitTime}m
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Status Messages */}
             {currentQueue.status === "waiting" && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="mb-6 rounded-2xl border border-[rgba(8,80,120,0.16)] bg-[rgba(133,216,206,0.14)] p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <AlertCircle className="mt-0.5 h-5 w-5 text-[#085078]" />
                   <div>
-                    <h3 className="font-medium text-blue-900 mb-1">
-                      {currentQueue.currentPosition <= 3
-                        ? "Your Turn is Coming Up!"
-                        : "Please Wait"}
+                    <h3 className="mb-1 font-medium text-[#085078]">
+                      {currentQueue.currentPosition <= 3 ? "Your Turn is Coming Up!" : "Please Wait"}
                     </h3>
-                    <p className="text-sm text-blue-800">
+                    <p className="text-sm text-[#0b4f63]">
                       {currentQueue.currentPosition === 1
                         ? "You're next! Please proceed to the service area."
                         : currentQueue.currentPosition <= 3
-                          ? `You're ${currentQueue.currentPosition - 1} ${currentQueue.currentPosition === 2
-                            ? "person"
-                            : "people"
-                          } away from being served.`
-                          : `There are ${currentQueue.currentPosition - 1
-                          } people ahead of you. We'll notify you when your turn is approaching.`}
+                          ? `You're ${currentQueue.currentPosition - 1} ${
+                              currentQueue.currentPosition === 2 ? "person" : "people"
+                            } away from being served.`
+                          : `There are ${
+                              currentQueue.currentPosition - 1
+                            } people ahead of you. We'll notify you when your turn is approaching.`}
                     </p>
                   </div>
                 </div>
@@ -424,9 +387,11 @@ export default function MyQueuePage() {
             {currentQueue.status === "served" && (
               <>
                 {currentQueue.expireAt ? (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 text-center">
-                    <h3 className="text-xl font-bold text-green-900 mb-2">It&apos;s Your Turn!</h3>
-                    <p className="text-green-800 mb-4">Please check in immediately to confirm you are present.</p>
+                  <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-6 text-center">
+                    <h3 className="mb-2 text-xl font-bold text-emerald-900">It&apos;s Your Turn!</h3>
+                    <p className="mb-4 text-emerald-800">
+                      Please check in immediately to confirm you are present.
+                    </p>
                     <button
                       onClick={async () => {
                         try {
@@ -436,18 +401,18 @@ export default function MyQueuePage() {
                           console.error(e);
                         }
                       }}
-                      className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg animate-pulse"
+                      className="brand-primary-button animate-pulse px-8 py-3"
                     >
                       CHECK IN NOW
                     </button>
                   </div>
                 ) : (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
-                      <h3 className="text-xl font-bold text-green-900">You&apos;re Being Served!</h3>
+                  <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-6 text-center">
+                    <div className="mb-2 flex items-center justify-center gap-2">
+                      <CheckCircle className="h-8 w-8 text-emerald-600" />
+                      <h3 className="text-xl font-bold text-emerald-900">You&apos;re Being Served!</h3>
                     </div>
-                    <p className="text-green-800">
+                    <p className="text-emerald-800">
                       Your attendance is confirmed. Please proceed to the counter.
                     </p>
                   </div>
@@ -456,14 +421,12 @@ export default function MyQueuePage() {
             )}
 
             {currentQueue.status === "completed" && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+              <div className="mb-6 rounded-2xl border border-[rgba(8,80,120,0.14)] bg-[rgba(133,216,206,0.16)] p-4">
                 <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-purple-600 mt-0.5" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 text-[#157490]" />
                   <div>
-                    <h3 className="font-medium text-purple-900 mb-1">
-                      Service Completed!
-                    </h3>
-                    <p className="text-sm text-purple-800">
+                    <h3 className="mb-1 font-medium text-[#085078]">Service Completed!</h3>
+                    <p className="text-sm text-[#0b4f63]">
                       Your service has been completed. Thank you! You will be redirected shortly.
                     </p>
                   </div>
@@ -472,13 +435,11 @@ export default function MyQueuePage() {
             )}
 
             {currentQueue.status === "expired" && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/90 p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <AlertCircle className="mt-0.5 h-5 w-5 text-red-600" />
                   <div>
-                    <h3 className="font-medium text-red-900 mb-1">
-                      Token Expired
-                    </h3>
+                    <h3 className="mb-1 font-medium text-red-900">Token Expired</h3>
                     <p className="text-sm text-red-800">
                       You did not check in on time. Your token has expired and you will be removed from the queue.
                     </p>
@@ -487,24 +448,24 @@ export default function MyQueuePage() {
               </div>
             )}
 
-            {/* Action Buttons */}
             <div className="flex gap-3">
               <button
                 onClick={handleLeaveQueue}
                 disabled={leavingQueue || currentQueue.status === "served"}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${currentQueue.status === "served"
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-                  }`}
+                className={`flex items-center justify-center gap-2 rounded-xl px-6 py-3 font-medium transition-colors ${
+                  currentQueue.status === "served"
+                    ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                    : "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                }`}
               >
                 {leavingQueue ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                     Leaving...
                   </>
                 ) : (
                   <>
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="h-5 w-5" />
                     Leave Queue
                   </>
                 )}
@@ -512,19 +473,15 @@ export default function MyQueuePage() {
             </div>
           </div>
         ) : (
-          // No active queue
           <div className="p-12 text-center">
-            <ListChecks className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Not in a Queue
-            </h3>
-            <p className="text-gray-600 mb-6">
-              You&apos;re not currently in any queue. Browse available queues to join
-              one.
+            <ListChecks className="mx-auto mb-4 h-16 w-16 text-gray-300" />
+            <h3 className="mb-2 text-xl font-semibold text-gray-900">Not in a Queue</h3>
+            <p className="mb-6 text-gray-600">
+              You&apos;re not currently in any queue. Browse available queues to join one.
             </p>
             <a
               href="/dashboard/user/queues"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="brand-primary-button inline-flex items-center gap-2 px-6 py-3"
             >
               <Activity className="w-5 h-5" />
               Browse Queues

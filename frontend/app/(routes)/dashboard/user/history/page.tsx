@@ -9,7 +9,6 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import { userQueueService } from "../../../../../lib/services/userQueueService";
 import { apiService } from "@/app/services/api";
 
 // Types matching backend schema
@@ -89,11 +88,16 @@ export default function HistoryPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <History className="w-6 h-6 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Queue History</h1>
+        <div className="brand-page-header">
+          <div className="flex items-center gap-3">
+            <History className="h-6 w-6 text-white" />
+            <div>
+              <h1 className="text-2xl font-bold text-white">Queue History</h1>
+              <p className="text-sm text-white/80">Review your completed and cancelled queue activity.</p>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="brand-section-card p-8">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-gray-600">Loading queue history...</span>
@@ -106,14 +110,19 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <History className="w-6 h-6 text-blue-600" />
-        <h1 className="text-2xl font-bold text-gray-900">Queue History</h1>
+      <div className="brand-page-header">
+        <div className="flex items-center gap-3">
+          <History className="h-6 w-6 text-white" />
+          <div>
+            <h1 className="text-2xl font-bold text-white">Queue History</h1>
+            <p className="text-sm text-white/80">Review your completed and cancelled queue activity.</p>
+          </div>
+        </div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-yellow-600" />
             <span className="text-yellow-800">{error}</span>
@@ -122,7 +131,7 @@ export default function HistoryPage() {
       )}
 
       {/* History List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="brand-section-card p-0">
         {historyData.length === 0 ? (
           <div className="p-8 text-center">
             <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -130,7 +139,7 @@ export default function HistoryPage() {
               No Queue History
             </h3>
             <p className="text-gray-600">
-              You haven't joined any queues yet. Your queue history will appear
+              You haven&apos;t joined any queues yet. Your queue history will appear
               here once you start using the system.
             </p>
           </div>
@@ -139,7 +148,7 @@ export default function HistoryPage() {
             {historyData.map((item) => (
               <div
                 key={`${item.queueId}-${item.token}-${item.joinedAt}`}
-                className="p-6 hover:bg-gray-50 transition-colors"
+              className="p-6 transition-colors hover:bg-[rgba(133,216,206,0.12)]"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

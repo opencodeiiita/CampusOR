@@ -88,9 +88,10 @@ export default function UserDashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Welcome back! Here&apos;s your queue status.</p>
+        <div className="brand-page-header">
+          <p className="brand-badge mb-4 bg-white/12 text-white border-white/20">uniq workspace</p>
+          <h1 className="mb-2 text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-white/80">Welcome back! Here&apos;s your queue status.</p>
         </div>
         <CardSkeleton />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -105,19 +106,20 @@ export default function UserDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here&apos;s your queue status.</p>
+      <div className="brand-page-header">
+        <p className="brand-badge mb-4 bg-white/12 text-white border-white/20">uniq workspace</p>
+        <h1 className="mb-2 text-3xl font-bold text-white">Dashboard</h1>
+        <p className="text-white/80">Welcome back! Here&apos;s your queue status.</p>
       </div>
 
       {currentQueue ? (
         /* Active Queue Card */
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg border border-blue-200 p-8">
+        <div className="brand-section-card">
           <div className="flex items-center justify-between mb-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-5 h-5 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">
+                <Activity className="w-5 h-5 text-[#085078]" />
+                <span className="text-sm font-medium text-[#085078]">
                   Currently In Queue
                 </span>
               </div>
@@ -131,21 +133,21 @@ export default function UserDashboardPage() {
             </div>
             <div className="text-center">
               <div className="text-sm text-gray-600 mb-1">Your Token</div>
-              <div className="text-4xl font-bold text-blue-600 font-mono">
+              <div className="text-4xl font-bold text-[#085078] font-mono">
                 {currentQueue.tokenNumber}
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <div className="brand-subtle-card text-center">
               <Users className="w-5 h-5 text-gray-400 mx-auto mb-2" />
               <div className="text-2xl font-bold text-gray-900">
                 #{currentQueue.currentPosition}
               </div>
               <div className="text-xs text-gray-600">Position</div>
             </div>
-            <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+            <div className="brand-subtle-card text-center">
               <Clock className="w-5 h-5 text-gray-400 mx-auto mb-2" />
               {currentQueue.expireAt && currentQueue.status === "served" ? (
                 <CountdownTimer targetDate={currentQueue.expireAt} />
@@ -156,7 +158,7 @@ export default function UserDashboardPage() {
               )}
               <div className="text-xs text-gray-600">{currentQueue.status === "served" && currentQueue.expireAt ? "Time to Check In" : "Est. Wait"}</div>
             </div>
-            <div className="bg-white rounded-lg p-4 text-center shadow-sm col-span-2 md:col-span-1">
+            <div className="brand-subtle-card col-span-2 text-center md:col-span-1">
               <CheckCircle className="w-5 h-5 text-gray-400 mx-auto mb-2" />
               <div className="text-sm font-semibold text-gray-900 capitalize">
                 {currentQueue.status}
@@ -167,7 +169,7 @@ export default function UserDashboardPage() {
 
           {currentQueue.currentPosition <= 3 &&
             currentQueue.status === "waiting" && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 mb-4">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-yellow-600" />
                   <span className="text-sm font-medium text-yellow-800">
@@ -183,7 +185,7 @@ export default function UserDashboardPage() {
             )}
 
           {currentQueue.status === "served" && currentQueue.expireAt && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 text-center">
+            <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 text-center">
               <p className="text-green-800 font-medium mb-3">It&apos;s your turn! Please check in to confirm your presence.</p>
               <button
                 onClick={async () => {
@@ -195,7 +197,7 @@ export default function UserDashboardPage() {
                     console.error(e);
                   }
                 }}
-                className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition"
+                className="brand-primary-button px-6 py-2"
               >
                 Check In Now
               </button>
@@ -204,7 +206,7 @@ export default function UserDashboardPage() {
 
           <Link
             href="/dashboard/user/myqueue"
-            className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white rounded-lg py-3 font-medium hover:bg-blue-700 transition-colors"
+            className="brand-primary-button flex w-full items-center justify-center gap-2 py-3"
           >
             View Full Details
             <ArrowRight className="w-4 h-4" />
@@ -212,7 +214,7 @@ export default function UserDashboardPage() {
         </div>
       ) : (
         /* No Queue - Browse Queues */
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <div className="brand-section-card text-center p-12">
           <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Not in a Queue
@@ -222,7 +224,7 @@ export default function UserDashboardPage() {
           </p>
           <Link
             href="/dashboard/user/queues"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="brand-primary-button inline-flex items-center gap-2 px-6 py-3"
           >
             <Activity className="w-5 h-5" />
             Browse Available Queues
@@ -234,10 +236,10 @@ export default function UserDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           href="/dashboard/user/queues"
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group"
+          className="brand-link-card group"
         >
-          <Activity className="w-8 h-8 text-blue-600 mb-3" />
-          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+          <Activity className="mb-3 h-8 w-8 text-[#085078]" />
+          <h3 className="mb-1 font-semibold text-gray-900 transition-colors group-hover:text-[#085078]">
             Browse Queues
           </h3>
           <p className="text-sm text-gray-600">
@@ -246,10 +248,10 @@ export default function UserDashboardPage() {
         </Link>
         <Link
           href="/dashboard/user/history"
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group"
+          className="brand-link-card group"
         >
-          <Clock className="w-8 h-8 text-purple-600 mb-3" />
-          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors">
+          <Clock className="mb-3 h-8 w-8 text-[#157490]" />
+          <h3 className="mb-1 font-semibold text-gray-900 transition-colors group-hover:text-[#157490]">
             Queue History
           </h3>
           <p className="text-sm text-gray-600">
@@ -258,10 +260,10 @@ export default function UserDashboardPage() {
         </Link>
         <Link
           href="/dashboard/user/notification"
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group"
+          className="brand-link-card group"
         >
-          <AlertCircle className="w-8 h-8 text-orange-600 mb-3" />
-          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-orange-600 transition-colors">
+          <AlertCircle className="mb-3 h-8 w-8 text-[#3d8f98]" />
+          <h3 className="mb-1 font-semibold text-gray-900 transition-colors group-hover:text-[#3d8f98]">
             Notifications
           </h3>
           <p className="text-sm text-gray-600">

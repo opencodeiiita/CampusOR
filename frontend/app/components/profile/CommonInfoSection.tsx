@@ -1,21 +1,18 @@
-const handleLogout = () => {
-  console.log("Logout clicked");
-  alert("Logout functionality will be integrated with auth later.");
-};
-
 export default function CommonInfoSection({
   name,
   email,
   role,
   joinedAt,
+  onLogout,
 }: {
   name: string;
   email: string;
   role: string;
   joinedAt: string;
+  onLogout: () => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sm:p-8 transition-all duration-300 hover:shadow-xl">
+    <div className="brand-section-card transition-all duration-300 hover:shadow-xl">
       <h2 className="mb-6 text-xl sm:text-2xl font-bold text-slate-900">
         Basic Information
       </h2>
@@ -29,15 +26,15 @@ export default function CommonInfoSection({
 
       <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
         <button
-          onClick={handleLogout}
-          className="flex-1 sm:flex-none rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold py-3 sm:py-3.5 px-4 sm:px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+          onClick={onLogout}
+          className="flex-1 rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-semibold text-red-700 transition-all duration-300 hover:scale-105 hover:bg-red-100 hover:shadow-lg sm:flex-none sm:px-6 sm:py-3.5"
         >
           Logout
         </button>
 
         <button
           disabled
-          className="flex-1 sm:flex-none rounded-lg bg-slate-600 hover:bg-slate-700 text-white font-semibold py-3 sm:py-3.5 px-4 sm:px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="brand-secondary-button flex-1 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 sm:flex-none sm:px-6 sm:py-3.5"
         >
           Edit Profile (Coming Soon)
         </button>

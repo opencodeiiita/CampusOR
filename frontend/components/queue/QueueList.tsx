@@ -78,17 +78,18 @@ export default function QueueList() {
   }, [queues]);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-sky-50">
-      <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen">
+    <div className="brand-shell min-h-screen w-full">
+      <div className="mx-auto min-h-screen w-full max-w-7xl p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sm:p-8 mb-8">
+        <div className="brand-panel mb-8 rounded-[28px] p-6 sm:p-8">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">
-                CampusOR
+              <span className="brand-badge mb-4">uniq queue explorer</span>
+              <h1 className="mb-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+                Browse live queues with confidence
               </h1>
-              <p className="text-lg sm:text-xl text-slate-600 font-medium">
-                Available Queues
+              <p className="text-lg font-medium text-slate-600 sm:text-xl">
+                Real-time availability, calmer waiting, and a more professional flow.
               </p>
             </div>
 
@@ -102,7 +103,7 @@ export default function QueueList() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="w-full border border border-black rounded-lg px-4 py-2.5 text-sm sm:text-base font-semibold text-black bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300 hover:border-gray-400"
+                  className="brand-input text-sm font-semibold text-slate-900 sm:text-base"
                 >
                   <option value="waitTime">Wait Time</option>
                   <option value="queueLength">Queue Length</option>
@@ -120,7 +121,7 @@ export default function QueueList() {
                   onChange={(e) =>
                     setLocationFilter(e.target.value as LocationFilter)
                   }
-                  className="w-full border border border-black rounded-lg px-4 py-2.5 text-sm sm:text-base font-semibold text-black bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300 hover:border-gray-400"
+                  className="brand-input text-sm font-semibold text-slate-900 sm:text-base"
                 >
                   <option value="all">All Locations</option>
                   {uniqueLocations.map((location) => (
@@ -141,7 +142,7 @@ export default function QueueList() {
                   onChange={(e) =>
                     setStatusFilter(e.target.value as StatusFilter)
                   }
-                  className="w-full border border border-black rounded-lg px-4 py-2.5 text-sm sm:text-base font-semibold text-black bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300 hover:border-gray-400"
+                  className="brand-input text-sm font-semibold text-slate-900 sm:text-base"
                 >
                   <option value="all">All Status</option>
                   <option value="open">Open</option>

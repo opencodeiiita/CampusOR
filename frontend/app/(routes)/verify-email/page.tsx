@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { useAuth } from "../../context/AuthContext";
 import Footer from "../../../components/footer/Footer";
+import { useAuth } from "../../context/AuthContext";
 import { apiService } from "../../services/api";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 const OTP_INPUT_LENGTH = 6;
 
@@ -19,7 +19,7 @@ export default function VerifyEmailPage() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState(
-    initialEmail ? `We sent a 6-digit code to ${initialEmail}.` : ""
+    initialEmail ? `We sent a 6-digit code to ${initialEmail}.` : "",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -71,8 +71,8 @@ export default function VerifyEmailPage() {
       const data = await apiService.post("/auth/verify-email", { email, otp }, false);
       login(data.token, data.user);
       router.replace(destinationRoute(data.user?.role));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Verification failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -92,36 +92,27 @@ export default function VerifyEmailPage() {
       const data = await apiService.post("/auth/resend-otp", { email }, false);
       setInfo(data.message || "A fresh code is on its way.");
       setCooldown(60);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to resend");
     } finally {
       setIsResending(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-900 scroll-smooth">
-      <nav className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl">
+    <main className="brand-shell min-h-screen text-slate-900">
+      <nav className="sticky top-0 z-30 border-b border-[var(--color-brand-line)] bg-white/80 backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between">
-            <Link href="/landing" className="flex items-center gap-3 group">
-              <img
-                src="/logo/LOGO.svg"
-                alt="CampusOR logo"
-                className="h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02] md:h-14"
-              />
+            <Link href="/" className="brand-wordmark">
+              <span className="brand-wordmark-mark">u</span>
+              <span className="brand-wordmark-name">uniq</span>
             </Link>
             <div className="hidden items-center gap-3 text-sm font-medium md:flex">
-              <Link
-                href="/login"
-                className="text-slate-500 transition-all duration-300 hover:text-slate-900 hover:scale-105"
-              >
+              <Link href="/login" className="text-slate-500 transition-all duration-300 hover:text-slate-900">
                 Back to Login
               </Link>
-              <Link
-                href="/signup"
-                className="rounded-full bg-slate-900 px-4 py-2 text-white transition-all duration-300 hover:bg-slate-800 hover:scale-105 hover:shadow-lg"
-              >
+              <Link href="/signup" className="brand-primary-button rounded-full px-4 py-2 text-sm">
                 Sign up
               </Link>
             </div>
@@ -129,69 +120,63 @@ export default function VerifyEmailPage() {
         </div>
       </nav>
 
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-8">
+      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-8">
         <form
           onSubmit={handleVerify}
-          className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-xl p-8 transition-all duration-300 hover:shadow-2xl"
+          className="brand-panel w-full max-w-md rounded-[28px] p-8 transition-all duration-300 hover:shadow-2xl"
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-wide text-sky-600 font-semibold">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-brand-deep)]">
                 Step 2 of 2
               </p>
-              <h1 className="text-2xl font-semibold text-slate-900">
-                Verify your email
-              </h1>
+              <h1 className="text-2xl font-semibold text-slate-900">Verify your email</h1>
             </div>
-            <div className="h-12 w-12 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(133,216,206,0.16)] font-bold text-[var(--color-brand-deep)]">
               OTP
             </div>
           </div>
 
-          <p className="text-sm text-slate-600 mb-4">
-            Enter the 6-digit code we emailed you to activate your account.
+          <p className="mb-4 text-sm text-slate-600">
+            Enter the 6-digit code we emailed you to activate your uniq account.
           </p>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
           {info && (
-            <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm">
+            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
               {info}
             </div>
           )}
 
-          <label className="text-sm font-medium text-slate-700 mb-2 block">
-            Email
-          </label>
+          <label className="mb-2 block text-sm font-medium text-slate-700">Email</label>
           <input
             type="email"
             placeholder="you@example.com"
-            className="w-full border border-slate-300 px-4 py-3 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            className="brand-input mb-3"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
 
-          <label className="text-sm font-medium text-slate-700 mb-2 block">
-            6-digit code
-          </label>
+          <label className="mb-2 block text-sm font-medium text-slate-700">6-digit code</label>
           <input
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={OTP_INPUT_LENGTH}
             placeholder="• • • • • •"
-            className="tracking-[0.6em] text-center text-xl w-full border border-slate-300 px-4 py-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            className="brand-input mb-4 text-center text-xl tracking-[0.6em]"
             value={otp}
             onChange={(e) => handleOtpChange(e.target.value)}
           />
 
           <button
             type="submit"
-            className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="brand-primary-button w-full py-3 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Verifying..." : "Verify and continue"}
@@ -202,18 +187,11 @@ export default function VerifyEmailPage() {
               type="button"
               onClick={handleResend}
               disabled={isResending || cooldown > 0}
-              className="text-sky-600 hover:text-sky-700 font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+              className="font-semibold text-[var(--color-brand-deep)] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {cooldown > 0
-                ? `Resend in ${cooldown}s`
-                : isResending
-                  ? "Sending..."
-                  : "Resend code"}
+              {cooldown > 0 ? `Resend in ${cooldown}s` : isResending ? "Sending..." : "Resend code"}
             </button>
-            <Link
-              href="/signup"
-              className="text-slate-500 hover:text-slate-800"
-            >
+            <Link href="/signup" className="text-slate-500 hover:text-slate-800">
               Use a different email
             </Link>
           </div>

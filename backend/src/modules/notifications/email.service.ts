@@ -199,6 +199,28 @@ export const sendEmailVerificationOtp = async (
   }
 };
 
+export const sendAdminInviteEmail = async (
+  email: string,
+  inviteLink: string,
+  inviterName: string,
+): Promise<void> => {
+  try {
+    const html = getAdminInviteEmailTemplate(inviteLink, inviterName);
+
+    const result = await sendEmail({
+      to: email,
+      subject: "You're invited to CampusOR Admin",
+      html,
+    });
+
+    if (!result.success) {
+      console.error("Failed to send admin invite email:", result.error);
+    }
+  } catch (error) {
+    console.error("Error sending admin invite email:", error);
+  }
+};
+
 /**
  * Send email to multiple recipients
  */

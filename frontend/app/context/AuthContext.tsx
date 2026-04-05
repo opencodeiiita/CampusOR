@@ -16,6 +16,8 @@ export type AuthUser = {
   collegeEmail?: string;
   department?: string;
   position?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type AuthContextType = {

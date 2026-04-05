@@ -10,6 +10,7 @@ import {
   enqueueToken,
 } from "../queue/services/redisQueue.service.js";
 import { syncQueueFullFlag } from "../queue/services/capacity.service.js";
+import { createNotification } from "../notifications/notification.service.js";
 
 export interface OperatorResponse {
   success: boolean;
@@ -57,6 +58,16 @@ export class OperatorService {
 
         await removeToken(queueId, currentlyServed._id.toString());
         await setNowServing(queueId, null);
+
+        const completedQueue = await Queue.findById(queueId).select("name");
+        await createNotification({
+          userId: currentlyServed.userId.toString(),
+          queueId,
+          queueName: completedQueue?.name || "Queue",
+          title: "Service completed",
+          message: `Your service at ${completedQueue?.name || "the queue"} has been completed.`,
+          type: "success",
+        });
       }
 
       // Find the next waiting token with lowest sequence number
@@ -94,6 +105,16 @@ export class OperatorService {
       await setNowServing(queueId, nextToken._id.toString());
 
       await syncQueueFullFlag(queueId);
+
+      const queue = await Queue.findById(queueId).select("name");
+      await createNotification({
+        userId: nextToken.userId.toString(),
+        queueId,
+        queueName: queue?.name || "Queue",
+        title: "It's your turn",
+        message: `Please proceed to ${queue?.name || "the counter"} now.`,
+        type: "info",
+      });
 
       return {
         success: true,
@@ -141,6 +162,16 @@ export class OperatorService {
 
       await syncQueueFullFlag(queueId);
 
+      const queue = await Queue.findById(queueId).select("name");
+      await createNotification({
+        userId: currentToken.userId.toString(),
+        queueId,
+        queueName: queue?.name || "Queue",
+        title: "Token skipped",
+        message: `Your token was skipped in ${queue?.name || "the queue"}.`,
+        type: "warning",
+      });
+
       return {
         success: true,
         token: {
@@ -186,6 +217,16 @@ export class OperatorService {
       );
 
       await syncQueueFullFlag(queueId);
+
+      const queue = await Queue.findById(queueId).select("name");
+      await createNotification({
+        userId: skippedToken.userId.toString(),
+        queueId,
+        queueName: queue?.name || "Queue",
+        title: "Token recalled",
+        message: `Your token has been put back in line for ${queue?.name || "the queue"}.`,
+        type: "info",
+      });
 
       return {
         success: true,

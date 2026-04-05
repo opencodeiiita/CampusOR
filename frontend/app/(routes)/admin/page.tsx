@@ -48,7 +48,7 @@ export default function AdminPage() {
             <div className="mb-8 sm:mb-10 pt-12 lg:pt-0">
               <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-slate-200">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-2">
-                  Admin Analytics Dashboard
+                  uniq Admin Analytics
                 </h1>
                 <p className="text-slate-600 text-sm sm:text-base font-medium">
                   Overview of system performance and metrics

@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import Footer from "../../../components/footer/Footer";
 import { apiService } from "@/app/services/api";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,8 +27,7 @@ export default function LoginPage() {
       login(data.token, data.user);
 
       const next = searchParams.get("next");
-      const safeNext =
-        next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+      const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
 
       const fallbackRoute =
         data.user?.role === "admin"
@@ -40,59 +37,31 @@ export default function LoginPage() {
             : "/dashboard/user";
 
       router.replace(safeNext || fallbackRoute);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 scroll-smooth">
-      {/* Landing Page Navbar */}
-      <nav className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur animate-in fade-in slide-in-from-top duration-700 relative">
+    <main className="brand-shell min-h-screen text-slate-900">
+      <nav className="sticky top-0 z-30 border-b border-[var(--color-brand-line)] bg-white/76 backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6">
-          <div className="flex items-center justify-between relative z-30">
-            <Link href="/landing" className="flex items-center gap-3 group">
-              <img
-                src="/logo/LOGO.svg"
-                alt="CampusOR logo"
-                className="h-11 w-auto object-contain drop-shadow-[0_4px_12px_rgba(15,23,42,0.18)] transition-transform duration-300 group-hover:scale-[1.03] md:h-14"
-              />
+          <div className="flex items-center justify-between">
+            <Link href="/" className="brand-wordmark">
+              <span className="brand-wordmark-mark">u</span>
+              <span className="brand-wordmark-name">uniq</span>
             </Link>
-
-            <div className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
-              <a
-                href="/landing#solution"
-                className="transition-all duration-300 hover:text-slate-900 hover:scale-105"
-              >
-                Solution
-              </a>
-              <a
-                href="#how"
-                className="transition-all duration-300 hover:text-slate-900 hover:scale-105"
-              >
-                How It Works
-              </a>
-              <a
-                href="#features"
-                className="transition-all duration-300 hover:text-slate-900 hover:scale-105"
-              >
-                Features
-              </a>
-            </div>
 
             <div className="hidden items-center gap-3 text-sm font-medium md:flex">
               <Link
                 href="/signup"
-                className="text-slate-500 transition-all duration-300 hover:text-slate-900 hover:scale-105"
+                className="text-slate-500 transition-all duration-300 hover:text-slate-900"
               >
                 Sign Up
               </Link>
-              <Link
-                href="/login"
-                className="rounded-full bg-slate-900 px-4 py-2 text-white transition-all duration-300 hover:bg-slate-800 hover:scale-105 hover:shadow-lg"
-              >
+              <Link href="/login" className="brand-primary-button rounded-full px-4 py-2 text-sm">
                 Login
               </Link>
             </div>
@@ -100,18 +69,21 @@ export default function LoginPage() {
         </div>
       </nav>
 
-      {/* Login Form */}
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-8">
+      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-8">
         <form
           onSubmit={handleLogin}
-          className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-xl p-8 transition-all duration-300 hover:shadow-2xl animate-in fade-in zoom-in"
+          className="brand-panel w-full max-w-md rounded-[28px] p-8 transition-all duration-300 hover:shadow-2xl"
         >
-          <h1 className="text-2xl font-semibold text-slate-900 text-center mb-6">
-            Login to CampusOR
+          <span className="brand-badge mb-5">welcome back</span>
+          <h1 className="mb-2 text-center text-3xl font-semibold text-slate-900">
+            Login to uniq
           </h1>
+          <p className="mb-6 text-center text-sm text-slate-600">
+            Continue with your live queue workspace.
+          </p>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -119,7 +91,7 @@ export default function LoginPage() {
           <input
             type="email"
             placeholder="Email"
-            className="w-full border border-slate-300 px-4 py-3 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            className="brand-input mb-3"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -128,7 +100,7 @@ export default function LoginPage() {
           <input
             type="password"
             placeholder="Password"
-            className="w-full border border-slate-300 px-4 py-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            className="brand-input mb-4"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -136,18 +108,15 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="brand-primary-button w-full py-3 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={isLoading}
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
 
-          <p className="text-center mt-6 text-sm text-slate-600">
-            Don't have an account?{" "}
-            <Link
-              href="/signup"
-              className="text-sky-600 hover:text-sky-700 font-semibold transition-colors"
-            >
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="font-semibold text-[var(--color-brand-deep)]">
               Sign up
             </Link>
           </p>
